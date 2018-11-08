@@ -53,7 +53,6 @@ bool SocketBase::Create() {
 void SocketBase::Close() {
   if (socket_ != INVALID_SOCKET) {
     closesocket(socket_);
-    socket_ = INVALID_SOCKET;
   }
 }
 

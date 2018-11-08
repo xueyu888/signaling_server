@@ -9,6 +9,7 @@ typedef SOCKET NativeSocket;
 #include <netinet/in.h>
 #include <sys/select.h>
 #include <sys/socket.h>
+#include <unistd.h>
 #define closesocket close
 typedef int NativeSocket;
 

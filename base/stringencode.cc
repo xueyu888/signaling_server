@@ -8,8 +8,6 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#include "stringencode.h"
-
 #include <cstdio>
 #include "stringencode.h"
 #include "stringutils.h"
@@ -18,6 +16,19 @@ namespace base {
 /////////////////////////////////////////////////////////////////////////////
 // String Encoding Utilities
 /////////////////////////////////////////////////////////////////////////////
+bool hex_decode(char ch, unsigned char* val) {
+  if ((ch >= '0') && (ch <= '9')) {
+    *val = ch - '0';
+  } else if ((ch >= 'A') && (ch <= 'F')) {
+    *val = (ch - 'A') + 10;
+  } else if ((ch >= 'a') && (ch <= 'f')) {
+    *val = (ch - 'a') + 10;
+  } else {
+    return false;
+  }
+  return true;
+}
+
 
 size_t url_decode(char* buffer,
                   size_t buflen,
@@ -45,19 +56,6 @@ size_t url_decode(char* buffer,
   }
   buffer[bufpos] = '\0';
   return bufpos;
-}
-
-bool hex_decode(char ch, unsigned char* val) {
-  if ((ch >= '0') && (ch <= '9')) {
-    *val = ch - '0';
-  } else if ((ch >= 'A') && (ch <= 'F')) {
-    *val = (ch - 'A') + 10;
-  } else if ((ch >= 'a') && (ch <= 'f')) {
-    *val = (ch - 'a') + 10;
-  } else {
-    return false;
-  }
-  return true;
 }
 
 
