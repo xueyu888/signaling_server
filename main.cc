@@ -62,12 +62,6 @@ int main(int argc, char* argv[]) {
     parser.PrintUsageMessage();
     return 0;
   }
-
-  base::ValidateFieldTrialsStringOrDie(FLAG_force_fieldtrials);
-  // InitFieldTrialsFromString stores the char*, so the char array must outlive
-  // the application.
-  webrtc::field_trial::InitFieldTrialsFromString(FLAG_force_fieldtrials);
-
   int port = strtol((parser.GetFlag("port")).c_str(), NULL, 10);
 
   // Abort if the user specifies a port that is outside the allowed
