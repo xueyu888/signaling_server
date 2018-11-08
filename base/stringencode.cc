@@ -11,9 +11,10 @@
 #include "stringencode.h"
 
 #include <cstdio>
+#include "stringencode.h"
 #include "stringutils.h"
 
-
+namespace base {
 /////////////////////////////////////////////////////////////////////////////
 // String Encoding Utilities
 /////////////////////////////////////////////////////////////////////////////
@@ -79,3 +80,5 @@ std::string s_transform(const std::string& source, Transform t) {
   std::string result(buffer, len);
   return result;
 }
+
+} // namespace base

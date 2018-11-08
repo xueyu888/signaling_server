@@ -82,7 +82,7 @@ class PeerChannel {
 
   //Checks if the request has a "peer_id" parameter and if so, looks up the
   //peer for whick the request is targeted at.
-  ChannelMember* isTargetedRequest(const DataSocket* ds) const;
+  ChannelMember* IsTargetedRequest(const DataSocket* ds) const;
 
   // Adds a new ChannelMember instance to the list of connected peers and
   // associates it with the socket.

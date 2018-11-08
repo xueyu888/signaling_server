@@ -207,7 +207,7 @@ ChannelMember* PeerChannel::Lookup(DataSocket* ds) const {
   return NULL;
 }
 
-ChannelMember* PeerChannel::isTargetedRequest(const DataSocket* ds) const {
+ChannelMember* PeerChannel::IsTargetedRequest(const DataSocket* ds) const {
   assert(ds);
   //Regardliess of GET or POST, we look for the peer_id parameter
   //only in the request_path
@@ -257,6 +257,108 @@ bool PeerChannel::AddMember(DataSocket* ds) {
   return true;
 }
 
-void PeerChannel::OnClosing(DataSocket* ds) {
-  
+void PeerChannel::CloseAll() {
+  Members::const_iterator i = members_.begin();
+  for (; i != members_.end(); ++i) {
+    (*i)->QueueResponse("200 OK", "text/plain", "", "Server shutting down");
+  }
+  DeleteAll();
 }
+
+void PeerChannel::OnClosing(DataSocket* ds) {
+  for (Members::iterator i = members_.begin(); i != members_.end(); ++i) {
+    ChannelMember* m = (*i);
+    m->OnClosing(ds);
+    if (!m->connected()) {
+      i = members_.erase(i);
+      Members failures;
+      BroadcastChangedState(*m, &failures);
+      HandleDeliveryFailures(&failures);
+      delete m;
+      if (i == members_.end())
+        break;
+    }
+  }
+  printf("Total connected: %s\n", std::to_string(members_.size()).c_str());
+}
+
+void PeerChannel::CheckForTimeout() {
+  for (Members::iterator i = members_.begin(); i != members_.end(); ++i) {
+    ChannelMember* m = (*i);
+    if (m->TimedOut()) {
+      printf("Timeout: %s\n", m->name().c_str());
+      m->set_disconnected();
+      i = members_.erase(i);
+      Members failures;
+      BroadcastChangedState(*m, &failures);
+      HandleDeliveryFailures(&failures);
+      delete m;
+      if (i == members_.end())
+        break;
+    }
+  }
+}
+
+void PeerChannel::DeleteAll() {
+  for (Members::iterator i = members_.begin(); i != members_.end(); ++i)
+    delete (*i);
+  members_.clear();
+}
+
+void PeerChannel::BroadcastChangedState(const ChannelMember& member,
+                                        Members* delivery_failures) {
+  // This function should be called prior to DataSocket::Close().
+  assert(delivery_failures);
+
+  if (!member.connected()) {
+    printf("Member disconnected: %s\n", member.name().c_str());
+  }
+
+  Members::iterator i = members_.begin();
+  for (; i != members_.end(); ++i) {
+    if (&member != (*i)) {
+      if (!(*i)->NotifyOfOtherMember(member)) {
+        (*i)->set_disconnected();
+        delivery_failures->push_back(*i);
+        i = members_.erase(i);
+        if (i == members_.end())
+          break;
+      }
+    }
+  }
+}
+
+void PeerChannel::HandleDeliveryFailures(Members* failures) {
+  assert(failures);
+
+  while (!failures->empty()) {
+    Members::iterator i = failures->begin();
+    ChannelMember* member = *i;
+    assert(!member->connected());
+    failures->erase(i);
+    BroadcastChangedState(*member, failures);
+    delete member;
+  }
+}
+
+// Builds a simple list of "name,id\n" entries for each member.
+std::string PeerChannel::BuildResponseForNewMember(const ChannelMember& member,
+                                                   std::string* content_type) {
+  assert(content_type);
+
+  *content_type = "text/plain";
+  // The peer itself will always be the first entry.
+  std::string response(member.GetEntry());
+  for (Members::iterator i = members_.begin(); i != members_.end(); ++i) {
+    if (member.id() != (*i)->id()) {
+      assert((*i)->connected());
+      response += (*i)->GetEntry();
+    }
+  }
+
+  return response;
+}
+
+
+
+
