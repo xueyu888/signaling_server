@@ -1,7 +1,7 @@
 # signaling_server (Webrtc-based peerconnection server)
 
-#master branch
-extracting the code of the signaling server of the WebRTC
+#master branch 
+extracting the code of the signaling server of the WebRTC. use for windows and linux
   
 #test branch
 作用：TCP穿透测试信令服务器（其实就是稍微改一点点webrtc的东西）
