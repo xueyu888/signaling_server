@@ -88,7 +88,7 @@ class DataSocket : public SocketBase {
   //Send a raw buffer of bytes.
   bool Send(const std::string& data) const;
 
-  //Send an HTTP respone. The |status| should start with a valid HTTP
+  //Send an HTTP response. The |status| should start with a valid HTTP
   //respone code, followed by a string. E.g. "200 OK".
   //if |connection_close| is set to true, an extra "Connection: close" HTTP
   //header will be included. |content_type| is the mime content type, not
@@ -116,7 +116,7 @@ class DataSocket : public SocketBase {
   //being requested.
   bool ParseMethodAndPath(const char* begin, size_t len);
 
-  //Determines the length of the body and it's mine type.
+  //Determines the length of the body and it's mime type.
   bool ParseContentLengthAndType(const char* headers, size_t length);
 
  protected:

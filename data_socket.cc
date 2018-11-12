@@ -139,7 +139,7 @@ bool DataSocket::Send(const std::string& status,
 
   buffer += kCrossOriginAllowHeaders;
 
-  buffer + "\r\n";
+  buffer += "\r\n";
   buffer += data;
 
   return Send(buffer);
