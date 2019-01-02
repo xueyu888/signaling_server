@@ -197,8 +197,10 @@ ChannelMember* PeerChannel::Lookup(DataSocket* ds) const {
   Members::const_iterator iter = members_.begin();
   for (; iter != members_.end(); ++iter) {
     if (id == (*iter)->id()) {
-      if (i == kWait)
+      if (i == kWait) {
+        printf("%s id %d wait\n", __func__, id);
         (*iter)->SetWaitingSocket(ds);
+      }
       if (i == kSignOut)
         (*iter)->set_disconnected();
       return *iter;

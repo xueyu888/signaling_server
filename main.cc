@@ -139,6 +139,7 @@ int main(int argc, char* argv[]) {
               }
             } else if (member->is_wait_request(s)) {
               // no need to do anything.
+              printf("%s name:%s id:%d\n", __func__, member->name().c_str(), member->id());
               socket_done = false;
             } else {
               ChannelMember* target = clients.IsTargetedRequest(s);
