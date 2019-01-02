@@ -71,10 +71,12 @@ class DataSocket : public SocketBase {
   size_t content_length() const { return content_length_; }
 
    bool request_received() const {
+    //printf("%s %lu %lu method %d\n", __func__, data_.length(), content_length_, method_); 
     return headers_received() && (method_ != POST || data_received());
   }
 
     bool data_received() const {
+    //printf("%s %d %d method %d\n", __func__, data_.length(), content_length_, method_); 
     return method_ != POST || data_.length() >= content_length_;
   }
 
@@ -87,8 +89,6 @@ class DataSocket : public SocketBase {
 
   //Send a raw buffer of bytes.
   bool Send(const std::string& data) const;
-
-  //Send an HTTP response. The |status| should start with a valid HTTP
   //respone code, followed by a string. E.g. "200 OK".
   //if |connection_close| is set to true, an extra "Connection: close" HTTP
   //header will be included. |content_type| is the mime content type, not

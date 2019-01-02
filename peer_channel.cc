@@ -286,6 +286,10 @@ void PeerChannel::CheckForTimeout() {
   for (Members::iterator i = members_.begin(); i != members_.end(); ++i) {
     ChannelMember* m = (*i);
     if (m->TimedOut()) {
+      if (m->name() == "xueyu@luoyefeisong" ) {
+        printf("%s listening client time out\n", __func__);
+        continue;
+      }
       printf("Timeout: %s\n", m->name().c_str());
       m->set_disconnected();
       i = members_.erase(i);

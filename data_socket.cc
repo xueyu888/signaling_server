@@ -17,7 +17,8 @@
 #include <string.h>
 
 #include "utils.h"
-
+#include "errno.h"
+	
 static const char kHeaderTerminator[] = "\r\n\r\n";
 static const int kHeaderTerminatorLength = sizeof(kHeaderTerminator) - 1;
 
@@ -266,7 +267,7 @@ bool ListeningSocket::Listen(unsigned short port) {
     printf("bind failed\n");
     return false;
   }
-  return listen(socket_, 5) != SOCKET_ERROR;
+  return listen(socket_, 64) != SOCKET_ERROR;
 }
 
 DataSocket* ListeningSocket::Accept() const {
@@ -275,8 +276,10 @@ DataSocket* ListeningSocket::Accept() const {
   socklen_t size = sizeof(addr);
   NativeSocket client = 
       accept(socket_, reinterpret_cast<sockaddr*>(&addr), &size);
-  if (client == INVALID_SOCKET)
+  if (client == INVALID_SOCKET){
+	printf("accept failed!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! error %d\n", errno);
     return NULL;
+}
   
   return new DataSocket(client);
 }

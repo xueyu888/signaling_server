@@ -20,6 +20,27 @@
 #include "utils.h"
 #include "base/command_line_parser.h"
 
+#include <sys/time.h>
+#include <time.h>
+
+void print_time ()
+{
+  struct timeval tv;
+  struct tm* ptm;
+  char time_string[40];
+  long milliseconds;
+
+  /* 获得日期时间，并转化为 struct tm。 */
+  gettimeofday (&tv, NULL);
+  ptm = localtime (&tv.tv_sec);
+  /* 格式化日期和时间，精确到秒为单位。*/
+  strftime (time_string, sizeof (time_string), "%Y-%m-%d %H:%M:%S", ptm);
+  /* 从微秒计算毫秒。*/
+  milliseconds = tv.tv_usec / 1000;
+  
+  printf("%s.%03ld\n", time_string, milliseconds);
+}
+
 
 static const size_t kMaxConnections = (FD_SETSIZE - 2);
 
@@ -147,7 +168,7 @@ int main(int argc, char* argv[]) {
       }
 
       if (socket_done) {
-        printf("Disconnecting socket\n");
+        //printf("Disconnecting socket\n");
         clients.OnClosing(s);
         assert(s->valid());  // Close must not have been called yet.
         FD_CLR(s->socket(), &socket_set);
@@ -168,6 +189,7 @@ int main(int argc, char* argv[]) {
       } else {
         sockets.push_back(s);
         printf("New connection...\n");
+	print_time();
       }
     }
   }
