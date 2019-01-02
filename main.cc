@@ -23,7 +23,7 @@
 #include <sys/time.h>
 #include <time.h>
 
-void print_time ()
+void print_time(std::string &time)
 {
   struct timeval tv;
   struct tm* ptm;
@@ -38,7 +38,7 @@ void print_time ()
   /* 从微秒计算毫秒。*/
   milliseconds = tv.tv_usec / 1000;
   
-  printf("%s.%03ld\n", time_string, milliseconds);
+  sprintf(time.c_str(), "%s.%03ld\n", time_string, milliseconds);
 }
 
 
@@ -139,7 +139,9 @@ int main(int argc, char* argv[]) {
               }
             } else if (member->is_wait_request(s)) {
               // no need to do anything.
-              printf("%s name:%s id:%d\n", __func__, member->name().c_str(), member->id());
+              std::string time;
+              print_time(time);
+              printf("%s %s name:%s id:%d\n", time.c_str(), __func__, member->name().c_str(), member->id());
               socket_done = false;
             } else {
               ChannelMember* target = clients.IsTargetedRequest(s);
@@ -190,7 +192,6 @@ int main(int argc, char* argv[]) {
       } else {
         sockets.push_back(s);
         printf("New connection...\n");
-	print_time();
       }
     }
   }
