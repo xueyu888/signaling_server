@@ -23,7 +23,7 @@
 #include <sys/time.h>
 #include <time.h>
 
-void print_time(std::string &time)
+void print_time(char* buffer)
 {
   struct timeval tv;
   struct tm* ptm;
@@ -38,7 +38,7 @@ void print_time(std::string &time)
   /* 从微秒计算毫秒。*/
   milliseconds = tv.tv_usec / 1000;
   
-  sprintf(time.c_str(), "%s.%03ld\n", time_string, milliseconds);
+  sprintf(buffer, "%s.%03ld ", time_string, milliseconds);
 }
 
 
@@ -139,9 +139,9 @@ int main(int argc, char* argv[]) {
               }
             } else if (member->is_wait_request(s)) {
               // no need to do anything.
-              std::string time;
+              char time[30] = {0};
               print_time(time);
-              printf("%s %s name:%s id:%d\n", time.c_str(), __func__, member->name().c_str(), member->id());
+              printf("%s %s name:%s id:%d\n", time, __func__, member->name().c_str(), member->id());
               socket_done = false;
             } else {
               ChannelMember* target = clients.IsTargetedRequest(s);
