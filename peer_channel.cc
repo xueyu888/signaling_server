@@ -35,13 +35,15 @@
 static const char kPeerIdHeader[] = "Pragma: ";
 
 static const char* kRequestPaths[] = {
-  "/wait", "sign_out", "/message",
+  "/wait", "sign_out", "/message", "/client", "/server"
 };
 
 enum RequestPathIndex {
   kWait,
   kSignOut,
   kMessage,
+  kClient,
+  kServer
 };
 
 const size_t kMaxNameLength = 512;
@@ -75,6 +77,14 @@ bool ChannelMember::is_wait_request(DataSocket* ds) const {
   return ds && ds->PathEquals(kRequestPaths[kWait]);
 }
 
+bool ChannelMember::is_client_request(DataSocket* ds) const {
+  return ds && ds->PathEquals(kRequestPaths[kClient]);
+}
+
+bool ChannelMember::is_server_request(DataSocket* ds) const {
+  return ds && ds->PathEquals(kRequestPaths[kServer]);
+}
+
 bool ChannelMember::TimedOut() {
   return waiting_socket_ == NULL && (time(NULL) - timestamp_) > 30;
 }
@@ -90,6 +100,12 @@ bool ChannelMember::NotifyOfOtherMember(const ChannelMember& other) {
   return true;
 }
 
+bool ChannelMember::NotifyServerIdToClient(const ChannelMember& other) {
+  assert(&other != this);
+  QueueResponse("200 OK", "text/plain", GetPeerIdHeader(), other.GetEntryForConnect());
+  return true;
+}
+
 // Returns a string in the form "name,id,connected\n"
 std::string ChannelMember::GetEntry() const {
   assert(name_.length() <= kMaxNameLength);
@@ -98,6 +114,18 @@ std::string ChannelMember::GetEntry() const {
   char entry[kMaxNameLength + 15];
   snprintf(entry, sizeof(entry), "%s,%d,%d\n",
           name_.substr(0, kMaxNameLength).c_str(), id_, connected_);
+  return entry;
+}
+
+// Returns a string in the form "name,id,#\n". 
+//# Indicates that the client needs to connect to the server
+std::string ChannelMember::GetEntryForConnect() const {
+  assert(name_.length() <= kMaxNameLength);
+
+  //name, 11-digit int, 1-digit bool, newline, null
+  char entry[kMaxNameLength + 15];
+  snprintf(entry, sizeof(entry), "%s,%d,#\n",
+          name_.substr(0, kMaxNameLength).c_str(), id_);
   return entry;
 }
 
@@ -161,6 +189,7 @@ void ChannelMember::SetWaitingSocket(DataSocket* ds) {
   }
 }
 
+
 //
 //PeerChannel
 //
@@ -207,6 +236,15 @@ ChannelMember* PeerChannel::Lookup(DataSocket* ds) const {
     }
   }
   return NULL;
+}
+
+ChannelMember& PeerChannel::Lookup(int id) const {
+  Members::const_iterator iter = members_.begin();
+  for (; iter != members_.end(); ++iter) {
+    if (id == (*iter)->id()) {
+      return **iter;
+    }
+  }
 }
 
 ChannelMember* PeerChannel::IsTargetedRequest(const DataSocket* ds) const {

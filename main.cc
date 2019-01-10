@@ -19,10 +19,11 @@
 #include "peer_channel.h"
 #include "utils.h"
 #include "base/command_line_parser.h"
-
+#if __linux__
 #include <sys/time.h>
+#endif
 #include <time.h>
-
+#if __linux__
 void print_time(char* buffer)
 {
   struct timeval tv;
@@ -40,7 +41,7 @@ void print_time(char* buffer)
   
   sprintf(buffer, "%s.%03ld ", time_string, milliseconds);
 }
-
+#endif
 
 static const size_t kMaxConnections = (FD_SETSIZE - 2);
 
@@ -104,6 +105,7 @@ int main(int argc, char* argv[]) {
   printf("Server listening on port %i\n", port);
 
   PeerChannel clients;
+  PeerDispatch peerdispatch;
   typedef std::vector<DataSocket*> SocketArray;
   SocketArray sockets;
   bool quit = false;
@@ -140,9 +142,20 @@ int main(int argc, char* argv[]) {
             } else if (member->is_wait_request(s)) {
               // no need to do anything.
               char time[30] = {0};
+#if __linux__              
               print_time(time);
+#endif              
               printf("%s %s name:%s id:%d\n", time, __func__, member->name().c_str(), member->id());
               socket_done = false;
+            } else if (member->is_client_request(s)) {
+                peerdispatch.AddClient(member->id());
+                int server_id = peerdispatch.Dispatch();
+                ChannelMember& server = clients.Lookup(server_id);
+
+                member->NotifyServerIdToClient(server);
+                peerdispatch.setUsedFlag(true, server_id, true);
+            } else if (member->is_server_request(s)) {
+                peerdispatch.AddServer(member->id());
             } else {
               ChannelMember* target = clients.IsTargetedRequest(s);
               if (target) {

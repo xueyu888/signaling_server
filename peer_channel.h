@@ -16,6 +16,7 @@
 #include <queue>
 #include <string>
 #include <vector>
+#include "peer_dispatch.h"
 
 class DataSocket;
 
@@ -29,16 +30,18 @@ class ChannelMember {
   int id() const { return id_; }
   void set_disconnected() { connected_ = false; }
   bool is_wait_request(DataSocket* ds) const;
+  bool is_client_request(DataSocket* ds) const;
+  bool is_server_request(DataSocket* ds) const;
   const std::string& name() const { return name_; }
 
   bool TimedOut();
   std::string GetPeerIdHeader() const;
 
   bool NotifyOfOtherMember(const ChannelMember& other);
-
+  bool NotifyServerIdToClient(const ChannelMember& other);
   //Returns a string in the form "name, id\n".
   std::string GetEntry() const;
-
+  std::string GetEntryForConnect() const;
   void ForwardRequestToPeer(DataSocket* ds, ChannelMember* peer);
 
   void OnClosing(DataSocket* ds);
@@ -79,7 +82,7 @@ class PeerChannel {
 
   //Finds a connected peer that's associated with the |ds| socket.
   ChannelMember* Lookup(DataSocket* ds) const;
-
+  ChannelMember& Lookup(int id) const;
   //Checks if the request has a "peer_id" parameter and if so, looks up the
   //peer for whick the request is targeted at.
   ChannelMember* IsTargetedRequest(const DataSocket* ds) const;
