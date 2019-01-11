@@ -17,7 +17,7 @@ void PeerDispatch::AddServer(int id) {
 }
 
 void PeerDispatch::DeleteClient(int id) {
-    auto iter = std::find(Clients_.begin(), Clients_.end(), 
+    auto iter = std::find_if(Clients_.begin(), Clients_.end(), 
                             std::bind(&FindId, id));
     Clients_.erase(iter);
 }
