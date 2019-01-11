@@ -23,20 +23,18 @@
 #include <sys/time.h>
 #endif
 #include <time.h>
-#if __linux__
+#ifdef __linux__
 void print_time(char* buffer)
 {
   struct timeval tv;
   struct tm* ptm;
   char time_string[40];
   long milliseconds;
-
-  /* 获得日期时间，并转化为 struct tm。 */
   gettimeofday (&tv, NULL);
   ptm = localtime (&tv.tv_sec);
-  /* 格式化日期和时间，精确到秒为单位。*/
+
   strftime (time_string, sizeof (time_string), "%Y-%m-%d %H:%M:%S", ptm);
-  /* 从微秒计算毫秒。*/
+
   milliseconds = tv.tv_usec / 1000;
   
   sprintf(buffer, "%s.%03ld ", time_string, milliseconds);
@@ -142,7 +140,7 @@ int main(int argc, char* argv[]) {
             } else if (member->is_wait_request(s)) {
               // no need to do anything.
               char time[30] = {0};
-#if __linux__              
+#ifdef __linux__              
               print_time(time);
 #endif              
               printf("%s %s name:%s id:%d\n", time, __func__, member->name().c_str(), member->id());
@@ -186,7 +184,7 @@ int main(int argc, char* argv[]) {
       if (socket_done) {
         //printf("Disconnecting socket\n");
         clients.OnClosing(s);
-        assert(s->valid());  // Close must not have been called yet.
+        assert(s->valid());  // Close must not have been called yet
         FD_CLR(s->socket(), &socket_set);
         delete (*i);
         i = sockets.erase(i);

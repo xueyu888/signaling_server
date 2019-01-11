@@ -2,6 +2,8 @@
 #include <algorithm>
 #include <functional>
 
+using namespace std::placeholders;
+
 void PeerDispatch::AddClient(int id) {
     endpoint ep;
     ep.used = false;
@@ -18,13 +20,13 @@ void PeerDispatch::AddServer(int id) {
 
 void PeerDispatch::DeleteClient(int id) {
     auto iter = std::find_if(Clients_.begin(), Clients_.end(), 
-                            std::bind(&FindId, id));
+                            [id](endpoint& ep){return ep.id == id;});
     Clients_.erase(iter);
 }
 
 void PeerDispatch::DeleteServer(int id) {
     auto iter = std::find_if(Servers_.begin(), Servers_.end(), 
-                            std::bind(&FindId, id));
+                            [id](endpoint& ep){return ep.id == id;});
     Servers_.erase(iter);
 }
 
@@ -33,13 +35,9 @@ int PeerDispatch::Dispatch() {
     return Servers_.front().id;
 }
 
-bool PeerDispatch::FindId(endpoint &ep, int id) {
-    return (ep.id == id);
-}
-
 void PeerDispatch::setUsedFlag(bool if_server, int id, bool used) {
     std::vector<endpoint> &ep = if_server ? Servers_ : Clients_;
     auto iter = std::find_if(ep.begin(), ep.end(), 
-                        std::bind(&FindId, id));
+                        [id](endpoint& ep){return ep.id == id;});
     iter->used = used;
 }

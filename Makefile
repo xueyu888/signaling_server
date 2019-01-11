@@ -1,7 +1,7 @@
 .PHONY:clean
 CFLAGS=-Wall -g
 CC=g++ -std=c++11
-OBJ=main.o peer_channel.o data_socket.o command_line_parser.o stringencode.o 
+OBJ=main.o peer_channel.o data_socket.o command_line_parser.o stringencode.o peer_dispatch.o
 main:$(OBJ)
 	$(CC) $(CFLAGS) $^ -o $@
 main.o:main.cc 
@@ -9,6 +9,8 @@ main.o:main.cc
 peer_channel.o:peer_channel.cc 
 	$(CC) $(CFLAGS) -c $< -o $@	
 data_socket.o:data_socket.cc 
+	$(CC) $(CFLAGS) -c $< -o $@
+peer_dispatch.o:peer_dispatch.cc 
 	$(CC) $(CFLAGS) -c $< -o $@
 command_line_parser.o:./base/command_line_parser.cc
 	$(CC) $(CFLAGS) -c $< -o $@

@@ -18,7 +18,6 @@ class PeerDispatch {
     void DeleteClient(int id);
     void DeleteServer(int id);
     int Dispatch();
-    bool FindId(endpoint &ep, int id);
     void setUsedFlag(bool if_server, int id, bool used);
   private:
     std::vector<endpoint> Clients_;
