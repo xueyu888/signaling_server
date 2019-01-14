@@ -5,6 +5,7 @@
 #include <winsock2.h>
 typedef int socklen_t;
 typedef SOCKET NativeSocket;
+#pragma comment(lib,"ws2_32.lib")
 #else //linux
 #include <netinet/in.h>
 #include <sys/select.h>

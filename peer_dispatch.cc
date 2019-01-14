@@ -31,8 +31,13 @@ void PeerDispatch::DeleteServer(int id) {
 }
 
 int PeerDispatch::Dispatch() {
-    Servers_.front().used = true;
-    return Servers_.front().id;
+	if (!Servers_.empty()) {
+		Servers_.front().used = true;
+		return Servers_.front().id;
+	}
+	else {
+		return 0;
+	}
 }
 
 void PeerDispatch::setUsedFlag(bool if_server, int id, bool used) {

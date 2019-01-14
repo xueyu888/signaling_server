@@ -238,13 +238,14 @@ ChannelMember* PeerChannel::Lookup(DataSocket* ds) const {
   return NULL;
 }
 
-ChannelMember& PeerChannel::Lookup(int id) const {
+ChannelMember* PeerChannel::Lookup(int id) const {
   Members::const_iterator iter = members_.begin();
   for (; iter != members_.end(); ++iter) {
     if (id == (*iter)->id()) {
-      return **iter;
+      return *iter;
     }
   }
+  return NULL;
 }
 
 ChannelMember* PeerChannel::IsTargetedRequest(const DataSocket* ds) const {
