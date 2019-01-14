@@ -258,7 +258,7 @@ ChannelMember* PeerChannel::Lookup(DataSocket* ds) const {
         printf("%s id %d wait\n", __func__, id);
         (*iter)->SetWaitingSocket(ds);
       } 
-      if (i = kClient) {
+      if (i == kClient) {
         printf("%s id %d client\n", __func__, id);
         (*iter)->SetP2pClientSocket(ds);
       }
