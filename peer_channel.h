@@ -53,12 +53,20 @@ class ChannelMember {
 
   void SetWaitingSocket(DataSocket* ds);
 
+
+  void SetP2pClientSocket(DataSocket* ds);
+  void P2pClientQueueResponse(const std::string& status,
+                              const std::string& content_type,
+                              const std::string& extra_headers,
+                              const std::string& data);
+
  protected:
   struct QueuedResponse {
     std::string status, content_type, extra_headers, data;
   };
 
   DataSocket* waiting_socket_;
+  DataSocket* p2p_client_socket_;
   int id_;
   bool connected_;
   time_t timestamp_;

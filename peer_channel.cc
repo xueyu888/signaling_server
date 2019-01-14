@@ -58,7 +58,8 @@ ChannelMember::ChannelMember(DataSocket* socket)
     : waiting_socket_(NULL),
       id_(++s_member_id_),
       connected_(true),
-      timestamp_(time(NULL)) {
+      timestamp_(time(NULL)),
+      p2p_client_socket_(NULL) {
   assert(socket);
   assert(socket->method() == DataSocket::GET);
   assert(socket->PathEquals("/sign_in"));
@@ -150,6 +151,9 @@ void ChannelMember::OnClosing(DataSocket* ds) {
     waiting_socket_ = NULL;
     timestamp_ = time(NULL);
   }
+  if (ds == p2p_client_socket_) {
+    p2p_client_socket_ = NULL;
+  }
 }
 
 void ChannelMember::QueueResponse(const std::string& status,
@@ -166,6 +170,15 @@ void ChannelMember::QueueResponse(const std::string& status,
     }
     waiting_socket_ = NULL;
     timestamp_ = time(NULL);  
+  } else if (p2p_client_socket_) {
+    assert(queue_.size() == 0);
+    assert(p2p_client_socket_->method() == DataSocket::GET);
+    bool ok = 
+      p2p_client_socket_->Send(status, true, content_type, extra_headers, data);
+    if (!ok) {
+      printf("Failed to deliver data to waiting socket\n");
+    }
+    p2p_client_socket_ = NULL;
   } else {
     QueuedResponse qr;
     qr.status = status;
@@ -175,6 +188,8 @@ void ChannelMember::QueueResponse(const std::string& status,
     queue_.push(qr);
   }                                
 }
+
+
 
 void ChannelMember::SetWaitingSocket(DataSocket* ds) {
   assert(ds->method() == DataSocket::GET);
@@ -189,6 +204,19 @@ void ChannelMember::SetWaitingSocket(DataSocket* ds) {
   }
 }
 
+//For p2p client
+void ChannelMember::SetP2pClientSocket(DataSocket* ds) {
+  assert(ds->method() == DataSocket::GET);
+  if (ds && !queue_.empty()) {
+    assert(p2p_client_socket_ == NULL);
+    const QueuedResponse& response = queue_.front();
+    ds->Send(response.status, true, response.content_type,
+             response.extra_headers, response.data);
+    queue_.pop();
+  } else {
+    p2p_client_socket_ = ds;
+  }
+}
 
 //
 //PeerChannel
@@ -229,6 +257,10 @@ ChannelMember* PeerChannel::Lookup(DataSocket* ds) const {
       if (i == kWait) {
         printf("%s id %d wait\n", __func__, id);
         (*iter)->SetWaitingSocket(ds);
+      } 
+      if (i = kClient) {
+        printf("%s id %d client\n", __func__, id);
+        (*iter)->SetP2pClientSocket(ds);
       }
       if (i == kSignOut)
         (*iter)->set_disconnected();

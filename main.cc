@@ -171,15 +171,15 @@ int main(int argc, char* argv[]) {
               printf("%s %s name:%s id:%d\n", time, __func__, member->name().c_str(), member->id());
               socket_done = false;
             } else if (member->is_client_request(s)) {
-                peerdispatch.AddClient(member->id());
-                int server_id = peerdispatch.Dispatch();
-				if (server_id) {
-					ChannelMember* server = clients.Lookup(server_id);
-					if (server) {
-						member->NotifyServerIdToClient(*server);
-						peerdispatch.setUsedFlag(true, server_id, true);
-					}
-				}
+              peerdispatch.AddClient(member->id());
+              int server_id = peerdispatch.Dispatch();
+              if (server_id) {
+                ChannelMember* server = clients.Lookup(server_id);
+                if (server) {
+                  member->NotifyServerIdToClient(*server);
+                  peerdispatch.setUsedFlag(true, server_id, true);
+                }
+              }
             } else if (member->is_server_request(s)) {
                 peerdispatch.AddServer(member->id());
             } else {
