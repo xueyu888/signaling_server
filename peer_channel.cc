@@ -118,14 +118,14 @@ std::string ChannelMember::GetEntry() const {
   return entry;
 }
 
-// Returns a string in the form "name,id,#\n". 
+// Returns a string in the form "name,id,connected,#\n". 
 //# Indicates that the client needs to connect to the server
 std::string ChannelMember::GetEntryForConnect() const {
   assert(name_.length() <= kMaxNameLength);
 
   //name, 11-digit int, 1-digit bool, newline, null
   char entry[kMaxNameLength + 15];
-  snprintf(entry, sizeof(entry), "%s,%d,#\n",
+  snprintf(entry, sizeof(entry), "%s,%d,0,#\n",
           name_.substr(0, kMaxNameLength).c_str(), id_);
   return entry;
 }
