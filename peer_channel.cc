@@ -103,8 +103,20 @@ bool ChannelMember::NotifyOfOtherMember(const ChannelMember& other) {
 
 bool ChannelMember::NotifyServerIdToClient(const ChannelMember& other) {
   assert(&other != this);
-  QueueResponse("200 OK", "text/plain", GetPeerIdHeader(), other.GetEntryForConnect());
-  return true;
+
+  if (p2p_client_socket_) {
+    assert(queue_.size() == 0);
+    assert(p2p_client_socket_->method() == DataSocket::GET);
+    bool ok = 
+      p2p_client_socket_->Send("200 OK", true, "text/plain", GetPeerIdHeader(), 
+                                other.GetEntryForConnect());
+    if (!ok) {
+      printf("Failed to deliver data to p2p client socket\n");
+    }
+    p2p_client_socket_ = NULL;
+    return true;
+  }
+  return false;
 }
 
 // Returns a string in the form "name,id,connected\n"
@@ -170,15 +182,6 @@ void ChannelMember::QueueResponse(const std::string& status,
     }
     waiting_socket_ = NULL;
     timestamp_ = time(NULL);  
-  } else if (p2p_client_socket_) {
-    assert(queue_.size() == 0);
-    assert(p2p_client_socket_->method() == DataSocket::GET);
-    bool ok = 
-      p2p_client_socket_->Send(status, true, content_type, extra_headers, data);
-    if (!ok) {
-      printf("Failed to deliver data to waiting socket\n");
-    }
-    p2p_client_socket_ = NULL;
   } else {
     QueuedResponse qr;
     qr.status = status;
@@ -207,15 +210,7 @@ void ChannelMember::SetWaitingSocket(DataSocket* ds) {
 //For p2p client
 void ChannelMember::SetP2pClientSocket(DataSocket* ds) {
   assert(ds->method() == DataSocket::GET);
-  if (ds && !queue_.empty()) {
-    assert(p2p_client_socket_ == NULL);
-    const QueuedResponse& response = queue_.front();
-    ds->Send(response.status, true, response.content_type,
-             response.extra_headers, response.data);
-    queue_.pop();
-  } else {
-    p2p_client_socket_ = ds;
-  }
+  p2p_client_socket_ = ds;
 }
 
 //
