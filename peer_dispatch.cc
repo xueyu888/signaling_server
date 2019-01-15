@@ -44,5 +44,6 @@ void PeerDispatch::setUsedFlag(bool if_server, int id, bool used) {
     std::vector<endpoint> &ep = if_server ? Servers_ : Clients_;
     auto iter = std::find_if(ep.begin(), ep.end(), 
                         [id](endpoint& ep){return ep.id == id;});
-    iter->used = used;
+    if (iter != ep.end())
+        iter->used = used;  
 }

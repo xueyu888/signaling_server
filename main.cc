@@ -19,11 +19,10 @@
 #include "peer_channel.h"
 #include "utils.h"
 #include "base/command_line_parser.h"
-#if __linux__
-#include <sys/time.h>
-#endif
 #include <time.h>
+
 #ifdef __linux__
+#include <sys/time.h>
 void print_time(char* buffer)
 {
   struct timeval tv;
@@ -171,17 +170,20 @@ int main(int argc, char* argv[]) {
               printf("%s %s name:%s id:%d\n", time, __func__, member->name().c_str(), member->id());
               socket_done = false;
             } else if (member->is_client_request(s)) {
+              ChannelMember* p2p_server = NULL;
               peerdispatch.AddClient(member->id());
-              int server_id = peerdispatch.Dispatch();
-              if (server_id) {
-                ChannelMember* server = clients.Lookup(server_id);
-                if (server) {
-                  member->NotifyServerIdToClient(*server);
-                  peerdispatch.setUsedFlag(true, server_id, true);
+              int p2p_server_id = peerdispatch.Dispatch();
+              if (p2p_server_id) {
+                p2p_server = clients.Lookup(p2p_server_id);
+                if (p2p_server) {
+                  member->set_p2p_server_id(p2p_server_id);
+                  member->NotifyServerIdToClient(p2p_server);
+                  peerdispatch.setUsedFlag(true, p2p_server_id, true);
                 }
               }
+              member->NotifyServerIdToClient(p2p_server);
             } else if (member->is_server_request(s)) {
-                peerdispatch.AddServer(member->id());
+              peerdispatch.AddServer(member->id());
             } else {
               ChannelMember* target = clients.IsTargetedRequest(s);
               if (target) {
@@ -212,6 +214,18 @@ int main(int argc, char* argv[]) {
       if (socket_done) {
         //printf("Disconnecting socket\n");
         clients.OnClosing(s);
+
+        ChannelMember* member = clients.Lookup(s);
+        if (member) {
+           //if p2p client close, set server to free, delete client 
+          if (member->get_p2p_server_id()) {
+            peerdispatch.setUsedFlag(true, member->get_p2p_server_id(), false);
+            peerdispatch.DeleteClient(member->id());
+          } else {
+            peerdispatch.DeleteServer(member->id());
+          } //if p2p server close, delete server
+        }
+
         assert(s->valid());  // Close must not have been called yet
         FD_CLR(s->socket(), &socket_set);
         delete (*i);

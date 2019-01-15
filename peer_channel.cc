@@ -59,7 +59,8 @@ ChannelMember::ChannelMember(DataSocket* socket)
       id_(++s_member_id_),
       connected_(true),
       timestamp_(time(NULL)),
-      p2p_client_socket_(NULL) {
+      p2p_client_socket_(NULL),
+      p2p_server_id_(0) {
   assert(socket);
   assert(socket->method() == DataSocket::GET);
   assert(socket->PathEquals("/sign_in"));
@@ -101,15 +102,17 @@ bool ChannelMember::NotifyOfOtherMember(const ChannelMember& other) {
   return true;
 }
 
-bool ChannelMember::NotifyServerIdToClient(const ChannelMember& other) {
-  assert(&other != this);
+bool ChannelMember::NotifyServerIdToClient(const ChannelMember* other) {
+  assert(other != this);
 
   if (p2p_client_socket_) {
     assert(queue_.size() == 0);
     assert(p2p_client_socket_->method() == DataSocket::GET);
     bool ok = 
       p2p_client_socket_->Send("200 OK", true, "text/plain", GetPeerIdHeader(), 
-                                other.GetEntryForConnect());
+                                other ? 
+                                other->GetEntryHaveServerId():
+                                GetEntryNotServerId() );
     if (!ok) {
       printf("Failed to deliver data to p2p client socket\n");
     }
@@ -118,6 +121,7 @@ bool ChannelMember::NotifyServerIdToClient(const ChannelMember& other) {
   }
   return false;
 }
+
 
 // Returns a string in the form "name,id,connected\n"
 std::string ChannelMember::GetEntry() const {
@@ -132,13 +136,25 @@ std::string ChannelMember::GetEntry() const {
 
 // Returns a string in the form "name,id,connected,#\n". 
 //# Indicates that the client needs to connect to the server
-std::string ChannelMember::GetEntryForConnect() const {
+std::string ChannelMember::GetEntryHaveServerId() const {
   assert(name_.length() <= kMaxNameLength);
 
   //name, 11-digit int, 1-digit bool, newline, null
   char entry[kMaxNameLength + 15];
   snprintf(entry, sizeof(entry), "%s,%d,0,#\n",
           name_.substr(0, kMaxNameLength).c_str(), id_);
+  return entry;
+}
+
+// Returns a string in the form "name,id,connected,#\n". 
+//# Indicates that the client needs to connect to the server
+std::string ChannelMember::GetEntryNotServerId() const {
+  assert(name_.length() <= kMaxNameLength);
+
+  //name, 11-digit int, 1-digit bool, newline, null
+  char entry[kMaxNameLength + 15];
+  snprintf(entry, sizeof(entry), "%s,0,0,#\n",
+          name_.substr(0, kMaxNameLength).c_str());
   return entry;
 }
 
@@ -163,9 +179,12 @@ void ChannelMember::OnClosing(DataSocket* ds) {
     waiting_socket_ = NULL;
     timestamp_ = time(NULL);
   }
-  if (ds == p2p_client_socket_) {
+
+  if (ds == p2p_client_socket_) 
     p2p_client_socket_ = NULL;
-  }
+  
+  p2p_server_id_ = 0;
+  
 }
 
 void ChannelMember::QueueResponse(const std::string& status,
@@ -211,6 +230,14 @@ void ChannelMember::SetWaitingSocket(DataSocket* ds) {
 void ChannelMember::SetP2pClientSocket(DataSocket* ds) {
   assert(ds->method() == DataSocket::GET);
   p2p_client_socket_ = ds;
+}
+
+int ChannelMember::get_p2p_server_id() {
+  return p2p_server_id_;
+}
+
+void ChannelMember::set_p2p_server_id(int id) {
+  p2p_server_id_ = id;
 }
 
 //

@@ -38,10 +38,11 @@ class ChannelMember {
   std::string GetPeerIdHeader() const;
 
   bool NotifyOfOtherMember(const ChannelMember& other);
-  bool NotifyServerIdToClient(const ChannelMember& other);
+  bool NotifyServerIdToClient(const ChannelMember* other);
   //Returns a string in the form "name, id\n".
   std::string GetEntry() const;
-  std::string GetEntryForConnect() const;
+  std::string GetEntryHaveServerId() const;
+  std::string GetEntryNotServerId() const;
   void ForwardRequestToPeer(DataSocket* ds, ChannelMember* peer);
 
   void OnClosing(DataSocket* ds);
@@ -52,13 +53,9 @@ class ChannelMember {
                       const std::string& data);
 
   void SetWaitingSocket(DataSocket* ds);
-
-
   void SetP2pClientSocket(DataSocket* ds);
-  void P2pClientQueueResponse(const std::string& status,
-                              const std::string& content_type,
-                              const std::string& extra_headers,
-                              const std::string& data);
+  int get_p2p_server_id();
+  void set_p2p_server_id(int id);
 
  protected:
   struct QueuedResponse {
@@ -67,6 +64,7 @@ class ChannelMember {
 
   DataSocket* waiting_socket_;
   DataSocket* p2p_client_socket_;
+  int p2p_server_id_;
   int id_;
   bool connected_;
   time_t timestamp_;

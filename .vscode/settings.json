@@ -45,5 +45,6 @@
     "list": "cpp",
     "unordered_map": "cpp",
     "xhash": "cpp"
-  }
+  },
+  "C_Cpp.default.configurationProvider": "vector-of-bool.cmake-tools"
 }
