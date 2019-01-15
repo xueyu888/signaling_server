@@ -182,8 +182,10 @@ int main(int argc, char* argv[]) {
                 }
               }
               member->NotifyServerIdToClient(p2p_server);
+              socket_done = false;
             } else if (member->is_server_request(s)) {
               peerdispatch.AddServer(member->id());
+              socket_done = false;
             } else {
               ChannelMember* target = clients.IsTargetedRequest(s);
               if (target) {
