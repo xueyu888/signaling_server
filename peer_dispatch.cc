@@ -9,6 +9,7 @@ void PeerDispatch::AddClient(int id) {
     ep.used = false;
     ep.id = id;
     Clients_.push_back(ep);
+    printf("%s %d\n", __func__, id);
 }
 
 void PeerDispatch::AddServer(int id) {
@@ -16,18 +17,25 @@ void PeerDispatch::AddServer(int id) {
     ep.used = false;
     ep.id = id;
     Servers_.push_back(ep);
+    printf("%s %d\n", __func__, id);
 }
 
 void PeerDispatch::DeleteClient(int id) {
     auto iter = std::find_if(Clients_.begin(), Clients_.end(), 
                             [id](endpoint& ep){return ep.id == id;});
-    Clients_.erase(iter);
+    if (iter != Clients_.end()) {
+        Clients_.erase(iter);
+        printf("%s %d\n", __func__, id);
+    }
 }
 
 void PeerDispatch::DeleteServer(int id) {
     auto iter = std::find_if(Servers_.begin(), Servers_.end(), 
                             [id](endpoint& ep){return ep.id == id;});
-    Servers_.erase(iter);
+    if (iter != Servers_.end()) {                                
+        Servers_.erase(iter);
+        printf("%s %d\n", __func__, id);
+    }
 }
 
 int PeerDispatch::Dispatch() {

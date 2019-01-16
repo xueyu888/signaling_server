@@ -12,5 +12,6 @@ include_directories(
     .
     ./base
 )
+add_compile_definitions(debug)
 
 add_executable(signaling_server ${sources})
