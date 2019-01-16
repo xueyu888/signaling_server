@@ -89,6 +89,7 @@ void HandleBrowserRequest(DataSocket* ds, bool* quit) {
   }
 }
 
+
 int main(int argc, char* argv[]) {
 #ifdef _WIN32
   WinsockInitializer s;
@@ -214,19 +215,9 @@ int main(int argc, char* argv[]) {
       }
 
       if (socket_done) {
+        
         //printf("Disconnecting socket\n");
         clients.OnClosing(s);
-
-        ChannelMember* member = clients.Lookup(s);
-        if (member) {
-           //if p2p client close, set server to free, delete client 
-          if (member->get_p2p_server_id()) {
-            peerdispatch.setUsedFlag(true, member->get_p2p_server_id(), false);
-            peerdispatch.DeleteClient(member->id());
-          } else {
-            peerdispatch.DeleteServer(member->id());
-          } //if p2p server close, delete server
-        }
 
         assert(s->valid());  // Close must not have been called yet
         FD_CLR(s->socket(), &socket_set);
@@ -237,7 +228,7 @@ int main(int argc, char* argv[]) {
       }
     }
 
-    clients.CheckForTimeout();
+    clients.CheckForTimeout(peerdispatch);
 
     if (FD_ISSET(listener.socket(), &socket_set)) {
       DataSocket* s = listener.Accept();

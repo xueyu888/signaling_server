@@ -105,7 +105,7 @@ class PeerChannel {
   // connection went dead).
   void OnClosing(DataSocket* ds);
 
-  void CheckForTimeout();
+  void CheckForTimeout(PeerDispatch& peerdispatch);
 
  protected:
   void DeleteAll();

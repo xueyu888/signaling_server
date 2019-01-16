@@ -182,10 +182,7 @@ void ChannelMember::OnClosing(DataSocket* ds) {
 
   if (ds == p2p_client_socket_) 
     p2p_client_socket_ = NULL;
-  
-  p2p_server_id_ = 0;
-  
-}
+ }
 
 void ChannelMember::QueueResponse(const std::string& status,
                                   const std::string& content_type,
@@ -377,7 +374,7 @@ void PeerChannel::OnClosing(DataSocket* ds) {
   printf("Total connected: %s\n", std::to_string(members_.size()).c_str());
 }
 
-void PeerChannel::CheckForTimeout() {
+void PeerChannel::CheckForTimeout(PeerDispatch& peerdispatch) {
   for (Members::iterator i = members_.begin(); i != members_.end(); ++i) {
     ChannelMember* m = (*i);
     if (m->TimedOut()) {
@@ -385,7 +382,17 @@ void PeerChannel::CheckForTimeout() {
         printf("%s listening client time out\n", __func__);
         continue;
       }
-      printf("Timeout: %s\n", m->name().c_str());
+      printf("Timeout: %s %d\n", m->name().c_str(), m->id());
+
+        //if p2p client close, set server to free, delete client 
+      if (m->get_p2p_server_id()) {
+        peerdispatch.setUsedFlag(true, m->get_p2p_server_id(), false);
+        peerdispatch.DeleteClient(m->id());
+      } else {
+        peerdispatch.DeleteServer(m->id());
+        m->set_p2p_server_id(0);
+      } //if p2p server close, delete server
+    
       m->set_disconnected();
       i = members_.erase(i);
       Members failures;
