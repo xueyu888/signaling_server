@@ -41,6 +41,7 @@ void PeerDispatch::DeleteServer(int id) {
 int PeerDispatch::Dispatch() {
 	if (!Servers_.empty()) {
 		Servers_.front().used = true;
+        printf("%s %d\n", __func__, Servers_.front().id);
 		return Servers_.front().id;
 	}
 	else {
@@ -52,6 +53,8 @@ void PeerDispatch::setUsedFlag(bool if_server, int id, bool used) {
     std::vector<endpoint> &ep = if_server ? Servers_ : Clients_;
     auto iter = std::find_if(ep.begin(), ep.end(), 
                         [id](endpoint& ep){return ep.id == id;});
-    if (iter != ep.end())
-        iter->used = used;  
+    if (iter != ep.end()) {
+        iter->used = used; 
+        printf("%s id %d use %d\n", __func__, id, used);
+    } 
 }
