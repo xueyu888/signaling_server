@@ -1,6 +1,6 @@
 project(signaling_server)
 
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 2.1)
 SET(CMAKE_C_COMPILER g++)
 add_compile_options(-std=c++11)
 #aux_source_directory(. sources)
@@ -12,6 +12,5 @@ include_directories(
     .
     ./base
 )
-add_compile_definitions(debug)
 
 add_executable(signaling_server ${sources})
