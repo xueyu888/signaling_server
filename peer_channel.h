@@ -39,10 +39,14 @@ class ChannelMember {
 
   bool NotifyOfOtherMember(const ChannelMember& other);
   bool NotifyServerIdToClient(const ChannelMember* other);
+  bool NotifyClientCloseToServer(const ChannelMember* other);
+  
   //Returns a string in the form "name, id\n".
   std::string GetEntry() const;
   std::string GetEntryHaveServerId() const;
   std::string GetEntryNotServerId() const;
+  std::string GetEntryClientClose() const;
+
   void ForwardRequestToPeer(DataSocket* ds, ChannelMember* peer);
 
   void OnClosing(DataSocket* ds);

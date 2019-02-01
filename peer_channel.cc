@@ -123,6 +123,14 @@ bool ChannelMember::NotifyServerIdToClient(const ChannelMember* other) {
 }
 
 
+bool ChannelMember::NotifyClientCloseToServer(const ChannelMember* other) {
+  assert(other != this);
+  QueueResponse("200 OK", "text/plain", GetPeerIdHeader(), 
+                other->GetEntryClientClose());
+  return true;
+}
+
+
 // Returns a string in the form "name,id,connected\n"
 std::string ChannelMember::GetEntry() const {
   assert(name_.length() <= kMaxNameLength);
@@ -131,6 +139,17 @@ std::string ChannelMember::GetEntry() const {
   char entry[kMaxNameLength + 15];
   snprintf(entry, sizeof(entry), "%s,%d,%d\n",
           name_.substr(0, kMaxNameLength).c_str(), id_, connected_);
+  return entry;
+}
+
+// Returns a string in the form "name,id,connected\n"
+std::string ChannelMember::GetEntryClientClose() const {
+  assert(name_.length() <= kMaxNameLength);
+
+  //name, 11-digit int, 1-digit bool, newline, null
+  char entry[kMaxNameLength + 15];
+  snprintf(entry, sizeof(entry), "%s,%d,-1\n",
+          name_.substr(0, kMaxNameLength).c_str(), id_);
   return entry;
 }
 
@@ -387,6 +406,8 @@ void PeerChannel::CheckForTimeout(PeerDispatch& peerdispatch) {
         //if p2p client close, set server to free, delete client 
       if (m->get_p2p_server_id()) {
         peerdispatch.setUsedFlag(true, m->get_p2p_server_id(), false);
+        ChannelMember* p2p_server = Lookup( m->get_p2p_server_id());
+        p2p_server->NotifyClientCloseToServer(m);
         peerdispatch.DeleteClient(m->id());
       } else {
         peerdispatch.DeleteServer(m->id());
