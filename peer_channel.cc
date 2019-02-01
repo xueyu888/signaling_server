@@ -127,6 +127,7 @@ bool ChannelMember::NotifyClientCloseToServer(const ChannelMember* other) {
   assert(other != this);
   QueueResponse("200 OK", "text/plain", GetPeerIdHeader(), 
                 other->GetEntryClientClose());
+  printf("%s %d", __func__, id_);                
   return true;
 }
 
@@ -407,7 +408,10 @@ void PeerChannel::CheckForTimeout(PeerDispatch& peerdispatch) {
       if (m->get_p2p_server_id()) {
         peerdispatch.setUsedFlag(true, m->get_p2p_server_id(), false);
         ChannelMember* p2p_server = Lookup( m->get_p2p_server_id());
-        p2p_server->NotifyClientCloseToServer(m);
+        if (p2p_server)
+          p2p_server->NotifyClientCloseToServer(m);
+        else 
+          printf("%s no server found", __func__ );
         peerdispatch.DeleteClient(m->id());
       } else {
         peerdispatch.DeleteServer(m->id());
