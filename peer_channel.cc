@@ -149,7 +149,7 @@ std::string ChannelMember::GetEntryClientClose() const {
 
   //name, 11-digit int, 1-digit bool, newline, null
   char entry[kMaxNameLength + 15];
-  snprintf(entry, sizeof(entry), "%s,%d,-1\n",
+  snprintf(entry, sizeof(entry), "%s,%d,2\n",
           name_.substr(0, kMaxNameLength).c_str(), id_);
   return entry;
 }
