@@ -106,7 +106,6 @@ bool ChannelMember::NotifyServerIdToClient(const ChannelMember* other) {
   assert(other != this);
 
   if (p2p_client_socket_) {
-    assert(queue_.size() == 0);
     assert(p2p_client_socket_->method() == DataSocket::GET);
     bool ok = 
       p2p_client_socket_->Send("200 OK", true, "text/plain", GetPeerIdHeader(), 

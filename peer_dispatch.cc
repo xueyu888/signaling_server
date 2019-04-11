@@ -40,13 +40,14 @@ void PeerDispatch::DeleteServer(int id) {
 
 int PeerDispatch::Dispatch() {
 	if (!Servers_.empty()) {
-		Servers_.front().used = true;
-        printf("%s %d\n", __func__, Servers_.front().id);
-		return Servers_.front().id;
+        for(auto i: Servers_) {
+            if (i.used != true) {
+                printf("%s %d\n", __func__, i.id);
+                return i.id;
+            }
+        }
 	}
-	else {
-		return 0;
-	}
+	return 0;
 }
 
 void PeerDispatch::setUsedFlag(bool if_server, int id, bool used) {
