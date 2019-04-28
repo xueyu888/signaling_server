@@ -11,11 +11,13 @@ class listener : public std::enable_shared_from_this<listener>
 {
     tcp::acceptor acceptor_;
     tcp::socket socket_;
+    std::string protocol_;
 
 public:
     listener(
         boost::asio::io_context& ioc,
-        tcp::endpoint endpoint);  
+        tcp::endpoint endpoint,
+        std::string& protocol);  
   
     // Start accepting incoming connections
     void run();

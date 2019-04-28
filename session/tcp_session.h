@@ -1,19 +1,15 @@
 #pragma once
 
-#include "boost/asio.hpp"
-#include "boost/beast.hpp"
-#include "boost/property_tree/ptree.hpp"
-#include "boost/property_tree/json_parser.hpp"
-#include <string>
+#include "session.h"
 
-namespace pt = boost::property_tree;
 using namespace boost::asio::ip;
 using namespace boost::asio;
 
-class session : public std::enable_shared_from_this<session> {
+class tcp_session : public session,
+                    public std::enable_shared_from_this<session> {
 public:  
-  session(tcp::socket socket);
-  ~session() = default;
+  tcp_session(tcp::socket socket, std::shared_ptr<session_delegate> session_dg);
+  ~tcp_session() = default;
 
   void run() {read();}
   void read();
@@ -30,4 +26,5 @@ public:
 private:
   tcp::socket socket_;
   std::string protocol_;
+  std::shared_ptr<session_delegate> session_delegate_;
 };

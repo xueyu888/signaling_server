@@ -15,17 +15,11 @@ namespace pt = boost::property_tree;
 // itself when notifications are sent from the server about the state
 // of other peers.
 
-static const char* kRequestPaths[] = {
-  "wait", "sign_out", "message",
-};
-
-
 const size_t kMaxNameLength = 512;
 
 //
 // ChannelMember
 //
-
 unsigned int ChannelMember::s_member_id_ = 0;
 
 ChannelMember::ChannelMember(std::shared_ptr<class session> session,

@@ -3,6 +3,7 @@ using namespace boost::asio::ip;
 
 int main(int argc, char* argv[])
 {
+    std::string potocol("tcp");
     auto const address = address::from_string("0.0.0.0");
     const unsigned short port = 8888;
     auto const threads = 4;
@@ -13,8 +14,8 @@ int main(int argc, char* argv[])
     // Create and launch a listening port
     std::make_shared<listener>(
         ioc,
-        tcp::endpoint{address, port}
-        )->run();
+        tcp::endpoint{address, port},
+		potocol)->run();
 
     // Run the I/O service on the requested number of threads
     std::vector<std::thread> v;

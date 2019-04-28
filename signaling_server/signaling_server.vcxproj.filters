@@ -18,34 +18,46 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\peer_channel.cpp">
+    <ClInclude Include="..\listener.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\peer_channel.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\peer_channel_delegate.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\session\http_session.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\session\session.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\session\session_delegate.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\session\tcp_session.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\session\session_delegate.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\session\tcp_session.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="..\listener.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="..\middle.cpp">
+    <ClCompile Include="..\peer_channel.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="..\session.cpp">
+    <ClCompile Include="..\peer_channel_delegate.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="..\main.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\peer_channel.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="..\listener.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="..\middle.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="..\session.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>

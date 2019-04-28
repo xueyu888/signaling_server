@@ -1,21 +1,26 @@
-#include "session.h"
-#include "middle.h"
+#pragma once
+#include "tcp_session.h"
+#include "session_delegate.h"
 #include <iostream>
 
-session::session(tcp::socket socket) :
-                      socket_(std::move(socket)) {
-                    
+tcp_session::tcp_session(tcp::socket socket, 
+                         std::shared_ptr<session_delegate> session_dg) :
+                         socket_(std::move(socket)),
+                         session_delegate_(session_dg) {
+	printf("ss]n\n");
 }
 
-void session::on_read(const boost::system::error_code& ec,
+void tcp_session::on_read(const boost::system::error_code& ec,
                              std::shared_ptr<std::string> buffer) {
+  if (session_delegate_)
+    session_delegate_->on_read(shared_from_this(), ec, buffer);
+
   if (ec) {
     printf("%s rx error. code %d msg %s \n", __func__, ec.value(), ec.message().c_str());
+    if (session_delegate_)
     close();
     return;
   }
-
-  handle_request(shared_from_this(), buffer);
 
   async_read(socket_, boost::asio::buffer(*buffer.get()),
               boost::bind(&session::on_read, 
@@ -24,7 +29,7 @@ void session::on_read(const boost::system::error_code& ec,
                           buffer));
 }
 
-void session::read() {
+void tcp_session::read() {
   std::shared_ptr<std::string> buffer;
   async_read(socket_, boost::asio::buffer(*buffer.get()),
               boost::bind(&session::on_read, 
@@ -33,8 +38,11 @@ void session::read() {
                           buffer));
 }
 
-void session::on_send(const boost::system::error_code& ec,
+void tcp_session::on_send(const boost::system::error_code& ec,
                       std::shared_ptr<std::string> buffer) {
+  if (session_delegate_)
+    session_delegate_->on_send(shared_from_this(), ec, buffer);
+
   if (ec) {                     
     printf("%s tx error: code %d msg %s \n", __func__, ec.value(), ec.message().c_str());
     close();
@@ -42,7 +50,7 @@ void session::on_send(const boost::system::error_code& ec,
   }
 }
 
-void session::send(std::shared_ptr<std::string> buffer) {
+void tcp_session::send(std::shared_ptr<std::string> buffer) {
     async_write(socket_, boost::asio::buffer(*buffer.get()),
               boost::bind(&session::on_send, 
                           shared_from_this(),
@@ -50,15 +58,16 @@ void session::send(std::shared_ptr<std::string> buffer) {
                           buffer));
 }
 
-void session::set_protocol(std::string& protocol) {
+void tcp_session::set_protocol(std::string& protocol) {
   protocol_ = protocol;
 }
 
-boost::asio::io_context& session::get_context() {
+boost::asio::io_context& tcp_session::get_context() {
   return socket_.get_io_context();
 }
 
-void session::close() {
-  handle_close(shared_from_this());
+void tcp_session::close() {
+  if (session_delegate_)
+    session_delegate_->on_close(shared_from_this());
   socket_.close();
 }

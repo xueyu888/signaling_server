@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 #include <queue>
-#include "session.h"
+#include "session/session.h"
 
 using namespace boost::asio::ip;
 #define KEEPALIVE_TIMEOUT  30
@@ -42,7 +42,6 @@ class ChannelMember : public std::enable_shared_from_this<ChannelMember> {
   std::string name_;
   static unsigned int s_member_id_;
   std::shared_ptr<class session> session_;
-  std::shared_ptr<class PeerChannel> peer_channel_;
 };
 
 class PeerChannel {
