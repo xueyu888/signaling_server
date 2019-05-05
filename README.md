@@ -6,7 +6,7 @@ Extracting the code of the signaling server of the WebRTC. use for windows and l
 #dev branch
 The new signaling server is based on the boost library development. 
 Use json format for transport signaling, compatible with tcp, http and websocket.
-The development of tcp has been completed.
+The development of tcp and http has been completed.
 
 
 
