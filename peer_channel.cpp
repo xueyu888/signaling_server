@@ -22,12 +22,12 @@ const size_t kMaxNameLength = 512;
 //
 unsigned int ChannelMember::s_member_id_ = 0;
 
-ChannelMember::ChannelMember(std::shared_ptr<class session> session,
+ChannelMember::ChannelMember(std::shared_ptr<class sender> sender,
 							               std::string& name)
     : id_(++s_member_id_),
-      session_(session),
+      sender_(sender),
       connected_(true),
-      timer_(session->get_context())  {
+      timer_(sender->get_context())  {
 
   name_ = name;
   if (name_.empty())
@@ -66,13 +66,13 @@ bool ChannelMember::NotifyOfOtherMember(const std::shared_ptr<ChannelMember> mem
 void ChannelMember::Close() {
   if (connected()) {
     set_disconnected();
-    session_->close();
+    sender_->close();
   }
 }
 
 
 void ChannelMember::Send(std::shared_ptr<std::string> buffer) {
-  session_->send(buffer);
+  sender_->send(buffer);
 }
 
 void ChannelMember::RecvKeepAlive() {
@@ -119,9 +119,9 @@ std::shared_ptr<ChannelMember> PeerChannel::Lookup(unsigned int id) const {
   return NULL;
 }
 
-std::shared_ptr<ChannelMember> PeerChannel::Lookup(std::shared_ptr<session> session) const {
+std::shared_ptr<ChannelMember> PeerChannel::Lookup(std::shared_ptr<sender> sender) const {
   for (auto i : members_) {
-    if (i->session() == session) {
+    if (i->sender() == sender) {
       return i;
     }
   }
@@ -138,9 +138,9 @@ void PeerChannel::ForwardRequestToPeer(unsigned int peer_id,
   peer->Send(buffer);
 }
 
-void PeerChannel::AddMember(std::shared_ptr<session> session,
+void PeerChannel::AddMember(std::shared_ptr<sender> sender,
                             std::string name) {
-  auto new_guy = std::make_shared<ChannelMember>(session, name);
+  auto new_guy = std::make_shared<ChannelMember>(sender, name);
   Members failures;
   BroadcastChangedState(new_guy, &failures);
   HandleDeliveryFailures(&failures);
@@ -155,8 +155,8 @@ void PeerChannel::AddMember(std::shared_ptr<session> session,
   new_guy->Send(response);
 }
 
-void PeerChannel::DeleteMember(std::shared_ptr<session> session) {
-  auto member = Lookup(session);
+void PeerChannel::DeleteMember(std::shared_ptr<sender> sender) {
+  auto member = Lookup(sender);
   if (member) {
     member->Close();
     for (Members::iterator i = members_.begin(); i != members_.end(); ++i) {
@@ -171,8 +171,8 @@ void PeerChannel::DeleteMember(std::shared_ptr<session> session) {
   }
 }
 
-void PeerChannel::HandleKeepAlive(std::shared_ptr<session> session) {
-  auto member = Lookup(session);
+void PeerChannel::HandleKeepAlive(std::shared_ptr<sender> sender) {
+  auto member = Lookup(sender);
   member->RecvKeepAlive();
 }
 

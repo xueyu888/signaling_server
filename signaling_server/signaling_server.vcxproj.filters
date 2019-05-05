@@ -30,13 +30,13 @@
     <ClInclude Include="..\session\http_session.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\session\session.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="..\session\session_delegate.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="..\session\tcp_session.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\session\sender.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -57,6 +57,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="..\main.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\session\http_session.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

@@ -8,36 +8,36 @@ session_delegate::~session_delegate(){
 
 }
 
-void session_delegate::on_connected(std::shared_ptr<session> session) {
+void session_delegate::on_connected(std::shared_ptr<sender> sender) {
   if (delegate_)
   {
-    delegate_->on_connected(session);
+    delegate_->on_connected(sender);
   }
 }
 
-void session_delegate::on_read(std::shared_ptr<session> session, const boost::system::error_code& e, std::shared_ptr<std::string> msg) {
+void session_delegate::on_read(std::shared_ptr<sender> sender, const boost::system::error_code& e, std::shared_ptr<std::string> msg) {
   if (delegate_)
   {
-    delegate_->on_read(session, e, msg);
+    delegate_->on_read(sender, e, msg);
   }
 }
 
-void session_delegate::on_send(std::shared_ptr<session> session, const boost::system::error_code& e, std::shared_ptr<std::string> msg) {
+void session_delegate::on_send(std::shared_ptr<sender> sender, const boost::system::error_code& e, std::shared_ptr<std::string> msg) {
   if (delegate_)
   {
-    delegate_->on_send(session, e, msg);
+    delegate_->on_send(sender, e, msg);
   }
 }
-void session_delegate::on_error(std::shared_ptr<session> session, const boost::system::error_code& e) {
+void session_delegate::on_error(std::shared_ptr<sender> sender, const boost::system::error_code& e) {
   if (delegate_)
   {
-    delegate_->on_error(session, e);
+    delegate_->on_error(sender, e);
   }
 }
-void session_delegate::on_close(std::shared_ptr<class session> session) {
+void session_delegate::on_close(std::shared_ptr<class sender> sender) {
   if (delegate_)
   {
-    delegate_->on_close(session);
+    delegate_->on_close(sender);
   }
 }
 

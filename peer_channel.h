@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 #include <queue>
-#include "session/session.h"
+#include "session/sender.h"
 
 using namespace boost::asio::ip;
 #define KEEPALIVE_TIMEOUT  30
@@ -12,13 +12,13 @@ using namespace boost::asio::ip;
 //Represents a single peer connected to the server.
 class ChannelMember : public std::enable_shared_from_this<ChannelMember> {
  public:
-  explicit ChannelMember(std::shared_ptr<session> session,
+  explicit ChannelMember(std::shared_ptr<sender> sender,
                          std::string& name);
   ~ChannelMember();
 
   bool connected() const { return connected_; }
   int id() const { return id_; }
-  std::shared_ptr<session> session() {return session_; }
+  std::shared_ptr<sender> sender() {return sender_; }
   void set_disconnected() { connected_ = false; }
   const std::string& name() const { return name_; }
 
@@ -41,7 +41,7 @@ class ChannelMember : public std::enable_shared_from_this<ChannelMember> {
   boost::asio::steady_timer timer_;
   std::string name_;
   static unsigned int s_member_id_;
-  std::shared_ptr<class session> session_;
+  std::shared_ptr<class sender> sender_;
 };
 
 class PeerChannel {
@@ -54,7 +54,7 @@ class PeerChannel {
   const Members& members() const { return members_; }
 
   std::shared_ptr<ChannelMember> Lookup(unsigned int id) const;
-  std::shared_ptr<ChannelMember> Lookup(std::shared_ptr<session> sesion) const;
+  std::shared_ptr<ChannelMember> Lookup(std::shared_ptr<sender> sesion) const;
 
   //Checks if the request has a "peer_id" parameter and if so, looks up the
   //peer for whick the request is targeted at.
@@ -62,10 +62,10 @@ class PeerChannel {
 
   // Adds a new ChannelMember instance to the list of connected peers and
   // associates it with the socket.
-  void AddMember(std::shared_ptr<session> session, 
+  void AddMember(std::shared_ptr<sender> sender, 
                  std::string name);
 
-  void DeleteMember(std::shared_ptr<session> session); 
+  void DeleteMember(std::shared_ptr<sender> sender); 
 
   // Cloes all connection and sends a "shutting down" message to all 
   // connected peers.
@@ -75,7 +75,7 @@ class PeerChannel {
   // connection went dead).
   void OnClosing(tcp::socket& ds);
 
-  void HandleKeepAlive(std::shared_ptr<session> sesion);
+  void HandleKeepAlive(std::shared_ptr<sender> sesion);
 
   void ForwardRequestToPeer(unsigned int peer_id, 
                             std::shared_ptr<std::string> buffer);
