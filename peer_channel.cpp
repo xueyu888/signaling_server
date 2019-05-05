@@ -139,19 +139,26 @@ void PeerChannel::ForwardRequestToPeer(unsigned int peer_id,
 }
 
 void PeerChannel::AddMember(std::shared_ptr<sender> sender,
-                            std::string name) {
+                            std::string name,
+                            bool is_server) {
   auto new_guy = std::make_shared<ChannelMember>(sender, name);
   Members failures;
-  BroadcastChangedState(new_guy, &failures);
-  HandleDeliveryFailures(&failures);
+  int server_id = 0;
+
   members_.push_back(new_guy);
 
-  printf("New member added (total=%s): %s\n",
-         std::to_string(members_.size()).c_str(), new_guy->name().c_str());
+  if (is_server) {
+    peer_dispatch_.AddServer(new_guy->id());
+  } else {
+    peer_dispatch_.AddClient(new_guy->id());
+    server_id = peer_dispatch_.Dispatch(new_guy->id());
+  }
+
+  printf("New member added (total=%d): %s %d\n",
+         members_.size(), new_guy->name().c_str(), new_guy->id());
   
   // Let the newly connected peer know about other members of the channel.
-  std::string content_type;
-  auto response = BuildResponseForNewMember(new_guy);
+  auto response = BuildResponseForNewMember(new_guy, server_id);
   new_guy->Send(response);
 }
 
@@ -162,9 +169,9 @@ void PeerChannel::DeleteMember(std::shared_ptr<sender> sender) {
     for (Members::iterator i = members_.begin(); i != members_.end(); ++i) {
       if (member == (*i)) {
         Members failures;
-        BroadcastChangedState(member, &failures);
-        HandleDeliveryFailures(&failures);
         members_.erase(i);
+
+        peer_dispatch_.DeleteMember(member->id());
         break;
       }
     }
@@ -223,25 +230,18 @@ void PeerChannel::HandleDeliveryFailures(Members* failures) {
   }
 }
 
-std::shared_ptr<std::string> PeerChannel::BuildResponseForNewMember(const std::shared_ptr<ChannelMember> member) {
+std::shared_ptr<std::string> PeerChannel::BuildResponseForNewMember(
+                             const std::shared_ptr<ChannelMember> member,
+                             int server_id) {
   pt::ptree tree;
   pt::ptree children;
 
   std::ostringstream oss;
   tree.put("signal", "success");
+  tree.put("my_id", member->id());
+  if (server_id)
+    tree.put("peer_id", server_id);
 
-  for (Members::iterator i = members_.begin(); i != members_.end(); ++i) {
-      if (member->id() != (*i)->id()) {
-        assert((*i)->connected());
-      pt::ptree child;
-      child.put("name", (*i)->name());
-      child.put("id", (*i)->id());
-      child.put("connected", (*i)->connected());
-      children.push_back(std::make_pair("", child));
-    }
-  }
-
-  tree.add_child("client", children);
   pt::write_json(oss, tree);
   auto response = std::make_shared<std::string> (oss.str());
   return response;

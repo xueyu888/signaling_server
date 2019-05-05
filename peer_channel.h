@@ -5,6 +5,8 @@
 #include <vector>
 #include <queue>
 #include "session/sender.h"
+#include "peer_dispatch.h"
+
 
 using namespace boost::asio::ip;
 #define KEEPALIVE_TIMEOUT  30
@@ -63,7 +65,8 @@ class PeerChannel {
   // Adds a new ChannelMember instance to the list of connected peers and
   // associates it with the socket.
   void AddMember(std::shared_ptr<sender> sender, 
-                 std::string name);
+                 std::string name,
+                 bool is_server);
 
   void DeleteMember(std::shared_ptr<sender> sender); 
 
@@ -86,8 +89,9 @@ class PeerChannel {
   void HandleDeliveryFailures(Members* failures);
 
   // Builds a simple list of "name,id\n" entries for each member.
-  std::shared_ptr<std::string> BuildResponseForNewMember(const std::shared_ptr<ChannelMember> member);
+  std::shared_ptr<std::string> BuildResponseForNewMember(const std::shared_ptr<ChannelMember> member, int server_id);
  protected:
   Members members_;
+  PeerDispatch peer_dispatch_;
 };
 

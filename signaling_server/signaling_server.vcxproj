@@ -123,6 +123,7 @@
     <ClInclude Include="..\listener.h" />
     <ClInclude Include="..\peer_channel.h" />
     <ClInclude Include="..\peer_channel_delegate.h" />
+    <ClInclude Include="..\peer_dispatch.h" />
     <ClInclude Include="..\session\http_session.h" />
     <ClInclude Include="..\session\sender.h" />
     <ClInclude Include="..\session\session_delegate.h" />
@@ -133,6 +134,7 @@
     <ClCompile Include="..\main.cpp" />
     <ClCompile Include="..\peer_channel.cpp" />
     <ClCompile Include="..\peer_channel_delegate.cpp" />
+    <ClCompile Include="..\peer_dispatch.cpp" />
     <ClCompile Include="..\session\http_session.cpp" />
     <ClCompile Include="..\session\session_delegate.cpp" />
     <ClCompile Include="..\session\tcp_session.cpp" />

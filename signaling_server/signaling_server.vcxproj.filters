@@ -39,6 +39,9 @@
     <ClInclude Include="..\session\sender.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="..\peer_dispatch.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\session\session_delegate.cpp">
@@ -60,6 +63,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="..\session\http_session.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\peer_dispatch.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

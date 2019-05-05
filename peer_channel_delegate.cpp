@@ -8,7 +8,10 @@ void peer_channal_delegate::on_read(std::shared_ptr<class sender> sender, const 
 
   if (signal == "sign-in") {
     std::string value = tree.get<std::string>("name");
-    clients_.AddMember(sender, value);
+    std::string type = tree.get<std::string>("type");
+    clients_.AddMember(sender, 
+                       value, 
+                       type == "server" ? true : false);
   }
   else if (signal == "message") {
     std::string value = tree.get<std::string>("peer_id");
