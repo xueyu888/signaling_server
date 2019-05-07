@@ -16,13 +16,13 @@ void tcp_session::run() {
 }
 
 void tcp_session::on_read(const boost::system::error_code& ec,
-                             std::shared_ptr<std::string> buffer) {
+                             std::shared_ptr<message> buffer) {
+  auto str = std::make_shared<std::string> (buffer->msg);
   if (session_delegate_)
-    session_delegate_->on_read(shared_from_this(), ec, buffer);
+    session_delegate_->on_read(shared_from_this(), ec, str);
 
   if (ec) {
     printf("%s rx error. code %d msg %s \n", __func__, ec.value(), ec.message().c_str());
-    if (session_delegate_)
     close();
     return;
   }
@@ -31,18 +31,20 @@ void tcp_session::on_read(const boost::system::error_code& ec,
 }
 
 void tcp_session::read() {
-  auto buffer = std::make_shared<std::string> ();
-  async_read(socket_, boost::asio::buffer(*buffer.get()),
-              boost::bind(&tcp_session::on_read,
+  auto buffer = std::make_shared<message> ();
+  socket_.async_read_some(boost::asio::buffer((buffer.get())->msg, 1000),
+                          boost::bind(&tcp_session::on_read,
                           shared_from_this(),
                           boost::asio::placeholders::error,
-                          buffer));
+                          buffer)); 
 }
 
 void tcp_session::on_send(const boost::system::error_code& ec,
-                      std::shared_ptr<std::string> buffer) {
+                      std::shared_ptr<message> buffer) {
+  auto str = std::make_shared<std::string> (buffer->msg);
+
   if (session_delegate_)
-    session_delegate_->on_send(shared_from_this(), ec, buffer);
+    session_delegate_->on_send(shared_from_this(), ec, str);
 
   if (ec) {                     
     printf("%s tx error: code %d msg %s \n", __func__, ec.value(), ec.message().c_str());
@@ -52,11 +54,13 @@ void tcp_session::on_send(const boost::system::error_code& ec,
 }
 
 void tcp_session::send(std::shared_ptr<std::string> buffer) {
-    async_write(socket_, boost::asio::buffer(*buffer.get()),
+    auto msg = std::make_shared<message> ();
+    strcpy_s(msg->msg, buffer->c_str());
+    async_write(socket_, boost::asio::buffer(msg->msg, strlen(msg->msg)),
               boost::bind(&tcp_session::on_send,
                           shared_from_this(),
                           boost::asio::placeholders::error,
-                          buffer));
+                          msg));
 }
 
 void tcp_session::close() {

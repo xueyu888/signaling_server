@@ -2,7 +2,6 @@
 #include <iostream>
 #include <memory>
 #include "session/tcp_session.h"
-#include "peer_channel_delegate.h"
 
 // Report a failure
 void
@@ -45,6 +44,7 @@ listener::listener(
         fail(ec, "listen");
         return;
     }
+    pcd_ = std::make_shared<peer_channal_delegate>();
 }
 
 // Start accepting incoming connections
@@ -70,9 +70,9 @@ void listener::on_accept(boost::system::error_code ec) {
     }
     else
     {
-		auto pcd = std::make_shared<peer_channal_delegate>();
+		
         if (protocol_ == "tcp") 
-            std::make_shared<tcp_session>(std::move(socket_), pcd)->run();
+            std::make_shared<tcp_session>(std::move(socket_), pcd_)->run();
 		if (protocol_ == "http")
 			;//std::make_shared<http_session>(std::move(socket_))->run();
     }

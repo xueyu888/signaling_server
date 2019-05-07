@@ -2,6 +2,7 @@
 
 #include "boost/asio.hpp"
 #include <string>
+#include "peer_channel_delegate.h"
 //------------------------------------------------------------------------------
 
 using namespace boost::asio::ip;
@@ -25,5 +26,7 @@ public:
     void do_accept();
  
     void on_accept(boost::system::error_code ec);
+private:
+    std::shared_ptr<peer_channal_delegate> pcd_;
 };
     

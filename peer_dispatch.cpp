@@ -54,3 +54,16 @@ int PeerDispatch::Dispatch(int client_id) {
 	return 0;
 }
 
+  int PeerDispatch::GetPeer(int id)
+  {
+    auto it = Map_.find(id);
+    if ( it != Map_.end())
+      return it->second;
+    
+    for(auto it = Map_.begin(); it != Map_.end(); ++it) {
+      if (it->second == id) {
+        return it->first;
+      }
+    }
+    return 0;
+  }

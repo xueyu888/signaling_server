@@ -5,6 +5,7 @@
 using namespace boost::asio::ip;
 using namespace boost::asio;
 
+
 class tcp_session : public sender,
                     public std::enable_shared_from_this<tcp_session> {
 public:  
@@ -14,11 +15,11 @@ public:
   void run();
   void read();
   void on_read(const boost::system::error_code& ec,
-                    std::shared_ptr<std::string> buffer);
+                    std::shared_ptr<message> buffer);
          
   void send(std::shared_ptr<std::string> buffer);
   void on_send(const boost::system::error_code& ec,
-                    std::shared_ptr<std::string> buffer);
+                    std::shared_ptr<message> buffer);
 
   void close();
   boost::asio::io_context& get_context();

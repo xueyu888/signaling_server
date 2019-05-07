@@ -1,10 +1,22 @@
 #include "peer_channel_delegate.h"
 
 void peer_channal_delegate::on_read(std::shared_ptr<class sender> sender, const boost::system::error_code& ec, std::shared_ptr<std::string> buffer) {
+  if (ec) 
+	return;
   std::istringstream iss(*buffer.get());
+  std::string signal;
   boost::property_tree::ptree tree;
-  boost::property_tree::read_json(iss, tree);
-  std::string signal = tree.get<std::string>("signal");
+
+  if (!iss)
+	  printf("buffer data is error: %s\n", buffer->c_str());
+  try {
+	boost::property_tree::json_parser::read_json(iss, tree);
+	signal = tree.get<std::string>("signal");
+  }
+  catch (boost::property_tree::ptree_error & ec) {
+	  printf("%s\n", ec.what());
+	  return;
+  }
 
   if (signal == "sign-in") {
     std::string value = tree.get<std::string>("name");

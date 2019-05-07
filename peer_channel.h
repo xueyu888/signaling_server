@@ -9,7 +9,7 @@
 
 
 using namespace boost::asio::ip;
-#define KEEPALIVE_TIMEOUT  30
+#define KEEPALIVE_TIMEOUT  30000
 
 //Represents a single peer connected to the server.
 class ChannelMember : public std::enable_shared_from_this<ChannelMember> {
@@ -32,7 +32,7 @@ class ChannelMember : public std::enable_shared_from_this<ChannelMember> {
   std::string GetEntry() const;
 
   void Close();
-  void RecvKeepAlive();
+  void KeepAlive();
   void OnTimeout(const boost::system::error_code& e);
 
   void Send(std::shared_ptr<std::string> buffer);

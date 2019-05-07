@@ -11,8 +11,8 @@ class PeerDispatch {
     void AddClient(int id);
     void AddServer(int id);
     void DeleteMember(int id);
-    int Dispatch(int client_id);
-    void setUsedFlag(bool if_server, int id, bool used);
+    int  Dispatch(int client_id);
+    int  GetPeer(int i);    
   private:
     std::vector<int> Clients_;
     std::vector<int> Servers_;

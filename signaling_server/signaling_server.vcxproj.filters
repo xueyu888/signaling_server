@@ -27,9 +27,6 @@
     <ClInclude Include="..\peer_channel_delegate.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\session\http_session.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="..\session\session_delegate.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -40,6 +37,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="..\peer_dispatch.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\session\http_session.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -62,10 +62,10 @@
     <ClCompile Include="..\main.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="..\session\http_session.cpp">
+    <ClCompile Include="..\peer_dispatch.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="..\peer_dispatch.cpp">
+    <ClCompile Include="..\session\http_session.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

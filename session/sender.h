@@ -10,6 +10,10 @@
 using namespace boost::asio::ip;
 using namespace boost::asio;
 
+typedef struct{
+	char msg[3000];
+}message;
+
 // Class for send message
 class sender {
 public:  

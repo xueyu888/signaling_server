@@ -75,7 +75,15 @@ void ChannelMember::Send(std::shared_ptr<std::string> buffer) {
   sender_->send(buffer);
 }
 
-void ChannelMember::RecvKeepAlive() {
+void ChannelMember::KeepAlive() {
+  pt::ptree tree;
+  std::ostringstream oss;
+
+  tree.put("signal", "keep-alive");
+  write_json(oss, tree);
+  auto msg = std::make_shared<std::string>(oss.str());
+  Send(msg);
+
   timer_.expires_after(std::chrono::seconds(KEEPALIVE_TIMEOUT));
   timer_.async_wait(std::bind(&ChannelMember::OnTimeout,
 							                shared_from_this(),
@@ -130,12 +138,27 @@ std::shared_ptr<ChannelMember> PeerChannel::Lookup(std::shared_ptr<sender> sende
 
 void PeerChannel::ForwardRequestToPeer(unsigned int peer_id, 
                                        std::shared_ptr<std::string> buffer) {
+  std::istringstream iss(*buffer.get());
+  boost::property_tree::ptree tree;
+  boost::property_tree::read_json(iss, tree);
   auto peer = Lookup(peer_id);
+  int id = 0;
+
   if (!peer) {
     printf("%s Can not found peer. id %u\n", __func__, peer_id);
   }
+  id = peer_dispatch_.GetPeer((int)peer_id);
+  if (id) {
+	tree.erase("peer_id");
+	tree.put("peer_id", id);
+	std::ostringstream oss;
+	pt::write_json(oss, tree);
+	auto response = std::make_shared<std::string>(oss.str());
 
-  peer->Send(buffer);
+    peer->Send(response);
+  } else {
+    printf("%s Can not found id in Map. id %u\n", __func__, peer_id);
+  }
 }
 
 void PeerChannel::AddMember(std::shared_ptr<sender> sender,
@@ -154,9 +177,10 @@ void PeerChannel::AddMember(std::shared_ptr<sender> sender,
     server_id = peer_dispatch_.Dispatch(new_guy->id());
   }
 
-  printf("New member added (total=%d): %s %d\n",
+  printf("New member added (total=%u): %s %d\n",
          members_.size(), new_guy->name().c_str(), new_guy->id());
-  
+
+  HandleKeepAlive(sender);
   // Let the newly connected peer know about other members of the channel.
   auto response = BuildResponseForNewMember(new_guy, server_id);
   new_guy->Send(response);
@@ -180,7 +204,7 @@ void PeerChannel::DeleteMember(std::shared_ptr<sender> sender) {
 
 void PeerChannel::HandleKeepAlive(std::shared_ptr<sender> sender) {
   auto member = Lookup(sender);
-  member->RecvKeepAlive();
+  member->KeepAlive();
 }
 
 
