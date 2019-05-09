@@ -18,20 +18,23 @@ public:
                std::shared_ptr<session_delegate> session_dg);
   ~http_session();
   
-  template<bool isRequest, class Body, class Fields>
-  void write(http::message<isRequest, Body, Fields>&& msg, 
-             std::shared_ptr<std::string> buffer);
-  void on_write(boost::system::error_code ec, 
-                bool close, 
-                std::shared_ptr<std::string> buffer);
+  void write(std::shared_ptr<http::response<http::string_body>> msg);
+  
+  void on_write( 
+                boost::system::error_code ec,
+                std::shared_ptr<http::response<http::string_body>> msg,
+                //std::size_t bytes_transferred,
+                bool b_close);
   // Start the asynchronous operation
   void run();
 
   void read();
-  void on_read(boost::system::error_code ec);
+  void on_read(boost::system::error_code ec,
+               std::shared_ptr<http::request<http::string_body>> req);
 
   void send(std::shared_ptr<std::string> buffer);
-  void on_send(boost::system::error_code ec, bool close);
+
+
   
   void close();
   boost::asio::io_context& get_context();

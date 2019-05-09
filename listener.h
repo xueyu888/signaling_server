@@ -18,7 +18,8 @@ public:
     listener(
         boost::asio::io_context& ioc,
         tcp::endpoint endpoint,
-        std::string& protocol);  
+        std::string& protocol,
+        std::shared_ptr<peer_channal_delegate> pcd);  
   
     // Start accepting incoming connections
     void run();

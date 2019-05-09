@@ -2,6 +2,7 @@
 #include <iostream>
 #include <memory>
 #include "session/tcp_session.h"
+#include "session/http_session.h"
 
 // Report a failure
 void
@@ -13,10 +14,12 @@ fail(boost::system::error_code ec, char const* what)
 listener::listener(
     boost::asio::io_context& ioc,
     tcp::endpoint endpoint,
-    std::string& protocol)
+    std::string& protocol,
+    std::shared_ptr<peer_channal_delegate> pcd)
     : acceptor_(ioc)
     , socket_(ioc)
     , protocol_(protocol)
+    , pcd_(pcd)
 {
     boost::system::error_code ec;
 
@@ -44,7 +47,6 @@ listener::listener(
         fail(ec, "listen");
         return;
     }
-    pcd_ = std::make_shared<peer_channal_delegate>();
 }
 
 // Start accepting incoming connections
@@ -74,7 +76,7 @@ void listener::on_accept(boost::system::error_code ec) {
         if (protocol_ == "tcp") 
             std::make_shared<tcp_session>(std::move(socket_), pcd_)->run();
 		if (protocol_ == "http")
-			;//std::make_shared<http_session>(std::move(socket_))->run();
+			std::make_shared<http_session>(std::move(socket_), pcd_)->run();
     }
 
     // Accept another connection

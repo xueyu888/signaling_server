@@ -24,12 +24,9 @@ class ChannelMember : public std::enable_shared_from_this<ChannelMember> {
   void set_disconnected() { connected_ = false; }
   const std::string& name() const { return name_; }
 
-  std::string GetPeerIdHeader() const;
 
   bool NotifyOfOtherMember(const std::shared_ptr<ChannelMember> other);
 
-  //Returns a string in the form "name, id\n".
-  std::string GetEntry() const;
 
   void Close();
   void KeepAlive();

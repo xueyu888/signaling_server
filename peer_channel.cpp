@@ -149,11 +149,11 @@ void PeerChannel::ForwardRequestToPeer(unsigned int peer_id,
   }
   id = peer_dispatch_.GetPeer((int)peer_id);
   if (id) {
-	tree.erase("peer_id");
-	tree.put("peer_id", id);
-	std::ostringstream oss;
-	pt::write_json(oss, tree);
-	auto response = std::make_shared<std::string>(oss.str());
+    tree.erase("peer_id");
+    tree.put("peer_id", id);
+    std::ostringstream oss;
+    pt::write_json(oss, tree);
+    auto response = std::make_shared<std::string>(oss.str());
 
     peer->Send(response);
   } else {
@@ -220,39 +220,6 @@ void PeerChannel::DeleteAll() {
   members_.clear();
 }
 
-void PeerChannel::BroadcastChangedState(std::shared_ptr<ChannelMember> member,
-                                        Members* delivery_failures) {
-  assert(delivery_failures);
-
-  if (!member->connected()) {
-    printf("Member disconnected: %s\n", member->name().c_str());
-  }
-
-  Members::iterator i = members_.begin();
-  for (; i != members_.end(); ++i) {
-    if (member != (*i)) {
-      if (!(*i)->NotifyOfOtherMember(member)) {
-        (*i)->set_disconnected();
-        delivery_failures->push_back(*i);
-        i = members_.erase(i);
-        if (i == members_.end())
-          break;
-      }
-    }
-  }
-}
-
-void PeerChannel::HandleDeliveryFailures(Members* failures) {
-  assert(failures);
-
-  while (!failures->empty()) {
-    Members::iterator i = failures->begin();
-    auto member = *i;
-    assert(!member->connected());
-    failures->erase(i);
-    BroadcastChangedState(member, failures);
-  }
-}
 
 std::shared_ptr<std::string> PeerChannel::BuildResponseForNewMember(
                              const std::shared_ptr<ChannelMember> member,

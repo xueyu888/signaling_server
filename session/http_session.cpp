@@ -12,7 +12,7 @@ http_session::http_session(tcp::socket socket,
         , strand_(socket_.get_executor())
         , session_delegate_(session_dg)
 {
-
+  socket_.set_option(boost::asio::ip::tcp::no_delay(true));
 }
 
 http_session::~http_session() {}
@@ -25,21 +25,24 @@ void http_session::run()
 
 void http_session::read() 
 {
-    // Read a request
-    http::async_read(socket_, buffer_, req_,
-        boost::asio::bind_executor(
-            strand_,
-            std::bind(
-                &http_session::on_read,
-                shared_from_this(),
-                std::placeholders::_1)));
+  auto req = std::make_shared<http::request<http::string_body>>();
+  // Read a request
+  http::async_read(socket_, buffer_, *req,
+      boost::asio::bind_executor(
+          strand_,
+          std::bind(
+              &http_session::on_read,
+              shared_from_this(),
+              std::placeholders::_1,
+              req)));
 }
 
-void http_session::on_read(boost::system::error_code ec) 
+void http_session::on_read(boost::system::error_code ec,
+                           std::shared_ptr<http::request<http::string_body>> req) 
 {
-  auto buffer = std::make_shared<std::string> (req_.body());
+  auto buffer = std::make_shared<std::string> (req->body());
   if (session_delegate_)
-    session_delegate_->on_send(shared_from_this(), ec, buffer);
+    session_delegate_->on_read(shared_from_this(), ec, buffer);
 
   if(ec) {
       printf("%s http rx error: code %d msg %s \n", __func__, ec.value(), ec.message().c_str());
@@ -57,41 +60,41 @@ void http_session::on_read(boost::system::error_code ec)
 
 void http_session::send(std::shared_ptr<std::string> buffer) 
 {
-    http::response<http::string_body> res;
-    res.set(http::field::server, BOOST_BEAST_VERSION_STRING);
-    res.set(http::field::content_type, "text/html");
-    res.keep_alive(true);
-    res.body() = *buffer.get();
-    res.prepare_payload();
+    auto res = std::make_shared<http::response<http::string_body>>();
+    res->set(http::field::server, BOOST_BEAST_VERSION_STRING);
+    res->set(http::field::content_type, "text/html");
+    res->keep_alive(true);
+    res->body() = *buffer.get();
+    res->prepare_payload();
 
-    write(std::move(res), buffer);
+    write(res);
 }
 
-template<bool isRequest, class Body, class Fields>
-void http_session::write(http::message<isRequest, Body, Fields>&& msg,
-                         std::shared_ptr<std::string> buffer) 
+void http_session::write(std::shared_ptr<http::response<http::string_body>> msg) 
 {
-
   // Write the response
   http::async_write(
       socket_, 
-      msg,
+      *msg,
       boost::asio::bind_executor(
           strand_,
           std::bind(
               &http_session::on_write,
               shared_from_this(),
-              std::placeholders::_1,
-			  msg.need_eof(),
-              buffer)));
+			        std::placeholders::_1,
+              //std::placeholders::_2,
+              msg,
+              msg->need_eof())));
 }
 
-void http_session::on_write(boost::system::error_code ec, 
-                            bool b_close,
-                            std::shared_ptr<std::string> buffer)
+void http_session::on_write(
+                            boost::system::error_code ec,
+                            //std::size_t bytes_transferred,
+                            std::shared_ptr<http::response<http::string_body>> msg,
+                            bool b_close)
 {
-    
-    if (session_delegate_ && buffer)
+	auto buffer = std::make_shared<std::string>(msg->body());
+    if (session_delegate_)
       session_delegate_->on_send(shared_from_this(), ec, buffer);
 
     if(ec) {
