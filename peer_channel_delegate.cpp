@@ -42,6 +42,7 @@ void peer_channal_delegate::on_read(std::shared_ptr<class sender> sender, const 
 
 void peer_channal_delegate::on_close(std::shared_ptr<class sender> sender) {
   clients_.DeleteMember(sender);
+  printf("%s sender.use_count() %d \n", __func__, sender.use_count());
 }
 
 void peer_channal_delegate::on_error(std::shared_ptr<class sender> sender, const boost::system::error_code& ec) {

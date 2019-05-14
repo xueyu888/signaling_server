@@ -7,49 +7,49 @@ using namespace std::placeholders;
 
 void PeerDispatch::AddClient(int id) {
     Clients_.push_back(id);
-    printf("%s %d\n", __func__, id);
+	printf("%s %d total %d\n", __func__, id, Clients_.size());
 }
 
 void PeerDispatch::AddServer(int id) {
     Servers_.push_back(id);
-    printf("%s %d\n", __func__, id);
+    printf("%s %d total %d\n", __func__, id, Servers_.size());
 }
 
 void PeerDispatch::DeleteMember(int id) {
-    auto iter = std::find_if(Clients_.begin(), 
-                             Clients_.end(), 
+    auto iter = std::find_if(Servers_.begin(), 
+                             Servers_.end(), 
                              [id](int& i){return i == id;});
-    if (iter != Clients_.end()) {
-        Clients_.erase(iter);
+    if (iter != Servers_.end()) {
+        Servers_.erase(iter);
         Map_.erase(id);
-        printf("%s %d\n", __func__, id);
     }
 
-    auto iter1 = std::find_if(Servers_.begin(), 
-                              Servers_.end(), 
+    auto iter1 = std::find_if(Clients_.begin(), 
+                              Clients_.end(), 
                               [id](int& i){return i == id;});
-    if (iter1 != Servers_.end()) {                                
-        Servers_.erase(iter1);
+    if (iter1 != Clients_.end()) {                                
+        Clients_.erase(iter1);
         for(auto it = Map_.begin(); it != Map_.end(); ++it) {
           if (it->second == id) {
             Map_.erase(it->first);
             break;
           }
         }
-
-        printf("%s %d\n", __func__, id);
     }
+	printf("%s %d total client %d server %d\n", 
+			__func__, id, Clients_.size(), Servers_.size());
 }
 
 int PeerDispatch::Dispatch(int client_id) {
 	if (!Servers_.empty()) {
-        for(auto i: Servers_) {
-            if (Map_.find(client_id) == Map_.end()) {
-                Map_.insert(std::pair<int, int>(client_id, i));
-                printf("%s client %d server %d\n", __func__, client_id, i);
-                return i;
-            }
+    for(auto i: Servers_) {
+        if (Map_.find(i) == Map_.end()) {
+            Map_.insert(std::pair<int, int>(i, client_id));
+            printf("%s client %d to server %d\n", 
+        __func__, client_id, i);
+            return i;
         }
+    }
 	}
 	return 0;
 }

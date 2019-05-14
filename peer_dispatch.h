@@ -16,5 +16,5 @@ class PeerDispatch {
   private:
     std::vector<int> Clients_;
     std::vector<int> Servers_;
-    std::map<int, int> Map_; //<client_id, server_id>
+    std::map<int, int> Map_; //<server_id, client_id>
  };

@@ -6,12 +6,13 @@ using namespace boost::asio::ip;
 using namespace boost::asio;
 
 
+
 class tcp_session : public sender,
                     public std::enable_shared_from_this<tcp_session> {
 public:  
   tcp_session(tcp::socket socket, std::shared_ptr<session_delegate> session_dg);
-  ~tcp_session() = default;
-
+  ~tcp_session();
+  
   void run();
   void read();
   void on_read(const boost::system::error_code& ec,

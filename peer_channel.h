@@ -2,7 +2,7 @@
 
 #include "boost/asio.hpp"
 #include <string>
-#include <vector>
+#include <list>
 #include <queue>
 #include "session/sender.h"
 #include "peer_dispatch.h"
@@ -20,12 +20,13 @@ class ChannelMember : public std::enable_shared_from_this<ChannelMember> {
 
   bool connected() const { return connected_; }
   int id() const { return id_; }
-  std::shared_ptr<sender> sender() {return sender_; }
-  void set_disconnected() { connected_ = false; }
+  void set_disconnected() { 
+	  connected_ = false; 
+  }
   const std::string& name() const { return name_; }
-
-
-  bool NotifyOfOtherMember(const std::shared_ptr<ChannelMember> other);
+  std::shared_ptr<class sender> sender() { 
+    return sender_.lock(); 
+  }
 
 
   void Close();
@@ -40,24 +41,19 @@ class ChannelMember : public std::enable_shared_from_this<ChannelMember> {
   boost::asio::steady_timer timer_;
   std::string name_;
   static unsigned int s_member_id_;
-  std::shared_ptr<class sender> sender_;
+  std::weak_ptr<class sender> sender_;
 };
 
 class PeerChannel {
  public: 
-  typedef std::vector<std::shared_ptr<ChannelMember>> Members;
+  typedef std::list<std::shared_ptr<ChannelMember> > Members;
 
   PeerChannel() {}
   ~PeerChannel() { DeleteAll(); }
 
-  const Members& members() const { return members_; }
-
   std::shared_ptr<ChannelMember> Lookup(unsigned int id) const;
   std::shared_ptr<ChannelMember> Lookup(std::shared_ptr<sender> sesion) const;
 
-  //Checks if the request has a "peer_id" parameter and if so, looks up the
-  //peer for whick the request is targeted at.
-  std::shared_ptr<ChannelMember> IsTargetedRequest(const tcp::socket& ds) const;
 
   // Adds a new ChannelMember instance to the list of connected peers and
   // associates it with the socket.
@@ -81,14 +77,12 @@ class PeerChannel {
                             std::shared_ptr<std::string> buffer);
  protected:
   void DeleteAll();
-  void BroadcastChangedState(const std::shared_ptr<ChannelMember> member,
-                             Members* delivery_failures);
-  void HandleDeliveryFailures(Members* failures);
 
   // Builds a simple list of "name,id\n" entries for each member.
-  std::shared_ptr<std::string> BuildResponseForNewMember(const std::shared_ptr<ChannelMember> member, int server_id);
+  std::shared_ptr<std::string> BuildResponseForNewMember(const std::shared_ptr<ChannelMember>& member, int server_id);
  protected:
   Members members_;
   PeerDispatch peer_dispatch_;
+  std::recursive_mutex member_lock_;
 };
 

@@ -7,6 +7,7 @@
 #include <algorithm>
 #include "boost/property_tree/ptree.hpp"
 #include "boost/property_tree/json_parser.hpp"
+#include <boost/bind.hpp>
 
 namespace pt = boost::property_tree;
 
@@ -35,44 +36,34 @@ ChannelMember::ChannelMember(std::shared_ptr<class sender> sender,
   else if (name_.length() > kMaxNameLength)
     name_.resize(kMaxNameLength);
   
+  printf("%s connected %d\n", __func__, connected());
   std::replace(name_.begin(), name_.end(), ',', '_');
 }
 
-ChannelMember::~ChannelMember() {}
-
-
-bool ChannelMember::NotifyOfOtherMember(const std::shared_ptr<ChannelMember> member) {
-  pt::ptree tree;
-  pt::ptree child;
-  pt::ptree children;
-  std::ostringstream oss;
-
-  tree.put("signal", "notity");
-  child.put("name", member->name());
-  child.put("id", member->id());
-  child.put("connected", member->connected());
-  children.push_back(std::make_pair("", child));
-  tree.add_child("peer", children);
-
-  write_json(oss, tree);
-  auto msg = std::make_shared<std::string>(oss.str());
-
-  Send(msg);
-
-  return true;
+ChannelMember::~ChannelMember() 
+{
+  printf("%s\n", __func__);
 }
+
+
+
 
 
 void ChannelMember::Close() {
   if (connected()) {
     set_disconnected();
-    sender_->close();
+    timer_.cancel();
+	printf("%s channelmember id %d\n", __func__, id());
+
+    if (auto s = sender_.lock())
+      s->close();
   }
 }
 
 
 void ChannelMember::Send(std::shared_ptr<std::string> buffer) {
-  sender_->send(buffer);
+  if (auto s = sender_.lock())
+    s->send(buffer);
 }
 
 void ChannelMember::KeepAlive() {
@@ -85,9 +76,10 @@ void ChannelMember::KeepAlive() {
   Send(msg);
 
   timer_.expires_after(std::chrono::seconds(KEEPALIVE_TIMEOUT));
-  timer_.async_wait(std::bind(&ChannelMember::OnTimeout,
-							                shared_from_this(),
-							                std::placeholders::_1));
+  timer_.async_wait(boost::bind(&ChannelMember::OnTimeout,
+	                  shared_from_this(),
+	                  boost::asio::placeholders::error));
+      
 }
 
 void ChannelMember::OnTimeout(const boost::system::error_code& ec) {
@@ -102,14 +94,15 @@ void ChannelMember::OnTimeout(const boost::system::error_code& ec) {
   {
       // Closing the socket cancels all outstanding operations. They
       // will complete with boost::asio::error::operation_aborted
+      printf("%s timer out \n", __func__);
       Close();
       return;
   }
 
   // Wait on the timer
-  timer_.async_wait(std::bind(&ChannelMember::OnTimeout,
-							                shared_from_this(),
-							                std::placeholders::_1));
+  timer_.async_wait(boost::bind(&ChannelMember::OnTimeout,
+							                 shared_from_this(),
+							                 boost::asio::placeholders::error));
 }
 
 //
@@ -141,11 +134,14 @@ void PeerChannel::ForwardRequestToPeer(unsigned int peer_id,
   std::istringstream iss(*buffer.get());
   boost::property_tree::ptree tree;
   boost::property_tree::read_json(iss, tree);
+
+  std::unique_lock<std::recursive_mutex> lock(member_lock_);
   auto peer = Lookup(peer_id);
   int id = 0;
 
   if (!peer) {
     printf("%s Can not found peer. id %u\n", __func__, peer_id);
+	return;
   }
   id = peer_dispatch_.GetPeer((int)peer_id);
   if (id) {
@@ -164,9 +160,9 @@ void PeerChannel::ForwardRequestToPeer(unsigned int peer_id,
 void PeerChannel::AddMember(std::shared_ptr<sender> sender,
                             std::string name,
                             bool is_server) {
-  auto new_guy = std::make_shared<ChannelMember>(sender, name);
-  Members failures;
+  auto new_guy = std::shared_ptr<ChannelMember> (new ChannelMember(sender, name));
   int server_id = 0;
+  std::unique_lock<std::recursive_mutex> lock(member_lock_);
 
   members_.push_back(new_guy);
 
@@ -187,28 +183,31 @@ void PeerChannel::AddMember(std::shared_ptr<sender> sender,
 }
 
 void PeerChannel::DeleteMember(std::shared_ptr<sender> sender) {
+  std::unique_lock<std::recursive_mutex> lock(member_lock_);
   auto member = Lookup(sender);
   if (member) {
     member->Close();
     for (Members::iterator i = members_.begin(); i != members_.end(); ++i) {
-      if (member == (*i)) {
-        Members failures;
+      if (member == *i) {
         members_.erase(i);
-
         peer_dispatch_.DeleteMember(member->id());
         break;
       }
     }
   }
+  printf("%s use %d\n", __func__, member.use_count());
 }
 
 void PeerChannel::HandleKeepAlive(std::shared_ptr<sender> sender) {
+  std::unique_lock<std::recursive_mutex> lock(member_lock_);
   auto member = Lookup(sender);
   member->KeepAlive();
 }
 
 
 void PeerChannel::CloseAll() {
+  std::unique_lock<std::recursive_mutex> lock(member_lock_);
+
   Members::const_iterator i = members_.begin();
   for (; i != members_.end(); ++i) {
     //TO DO
@@ -217,12 +216,14 @@ void PeerChannel::CloseAll() {
 }
 
 void PeerChannel::DeleteAll() {
+  std::unique_lock<std::recursive_mutex> lock(member_lock_);
+
   members_.clear();
 }
 
 
 std::shared_ptr<std::string> PeerChannel::BuildResponseForNewMember(
-                             const std::shared_ptr<ChannelMember> member,
+                             const std::shared_ptr<ChannelMember>& member,
                              int server_id) {
   pt::ptree tree;
   pt::ptree children;

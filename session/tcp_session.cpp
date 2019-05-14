@@ -2,6 +2,7 @@
 #include "tcp_session.h"
 #include "session_delegate.h"
 #include <iostream>
+int g_tcp_session_num = 0;
 
 tcp_session::tcp_session(tcp::socket socket, 
                          std::shared_ptr<session_delegate> session_dg) :
@@ -9,10 +10,15 @@ tcp_session::tcp_session(tcp::socket socket,
                          session_delegate_(session_dg),
                          strand_(socket_.get_executor()) {
   socket_.set_option(boost::asio::ip::tcp::no_delay(true));
+  printf("%s g_tcp_session_num %d\n", __func__, ++g_tcp_session_num);
+}
+
+tcp_session::~tcp_session()
+{
+  printf("%s g_tcp_session_num %d\n", __func__, --g_tcp_session_num);
 }
 
 void tcp_session::run() {
-  printf("The session has been created. socket %d\n", socket_.native_handle());
   read();
 }
 
@@ -88,10 +94,11 @@ void tcp_session::send(std::shared_ptr<std::string> buffer) {
 }
 
 void tcp_session::close() {
+  boost::system::error_code ec;
+  socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
+  socket_.close();
   if (session_delegate_)
     session_delegate_->on_close(shared_from_this());
-  socket_.close();
-  printf("The session has been closed. socket %d\n", socket_.native_handle());
 }
 
 boost::asio::io_context& tcp_session::get_context() {

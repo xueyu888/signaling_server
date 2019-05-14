@@ -112,9 +112,10 @@ void http_session::on_write(
 }
 
 void http_session::close() {
+  socket_.close();
   if (session_delegate_)
     session_delegate_->on_close(shared_from_this());
-  socket_.close();
+  
   printf("The session has been closed. socket %d\n", socket_.native_handle());
 }
 
