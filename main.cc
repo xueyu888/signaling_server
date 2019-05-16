@@ -193,6 +193,14 @@ int main(int argc, char* argv[]) {
                 member->ForwardRequestToPeer(s, target);
               } else if (s->PathEquals("/sign_out")) {
                 s->Send("200 OK", true, "text/plain", "", "");
+                if (member) {
+                  if (member->get_p2p_server_id()) {
+                    peerdispatch.setUsedFlag(true, member->get_p2p_server_id(), false);
+                    ChannelMember* p2p_server = clients.Lookup( member->get_p2p_server_id());
+                    if (p2p_server)
+                      p2p_server->NotifyClientCloseToServer(member);
+                  }
+                }
               } else {
                 printf("Couldn't find target for request: %s\n",
                        s->request_path().c_str());
