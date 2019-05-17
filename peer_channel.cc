@@ -66,7 +66,8 @@ ChannelMember::ChannelMember(DataSocket* socket)
       connected_(true),
       timestamp_(time(NULL)),
       p2p_client_socket_(NULL),
-      p2p_server_id_(0) {
+      p2p_server_id_(0),
+      time_keepalive_(time(NULL)) {
   assert(socket);
   assert(socket->method() == DataSocket::GET);
   assert(socket->PathEquals("/sign_in"));
@@ -97,8 +98,13 @@ bool ChannelMember::is_server_request(DataSocket* ds) const {
   return ds && ds->PathEquals(kRequestPaths[kServer]);
 }
 
+void ChannelMember::keepalive() {
+  time_keepalive_ = time(NULL);
+}
+
 bool ChannelMember::TimedOut() {
-  return waiting_socket_ == NULL && (time(NULL) - timestamp_) > 15;
+  return (waiting_socket_ == NULL && (time(NULL) - timestamp_) > 15) || 
+         (time(NULL) - time_keepalive_) > 15;
 }
 
 std::string ChannelMember::GetPeerIdHeader() const {

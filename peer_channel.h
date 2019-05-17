@@ -35,6 +35,7 @@ class ChannelMember {
   bool is_keep_alive(DataSocket* ds) const;
   const std::string& name() const { return name_; }
 
+  void keepalive();
   bool TimedOut();
   std::string GetPeerIdHeader() const;
 
@@ -73,6 +74,7 @@ class ChannelMember {
   int id_;
   bool connected_;
   time_t timestamp_;
+  time_t time_keepalive_;
   std::string name_;
   std::queue<QueuedResponse> queue_;
   static int s_member_id_;
