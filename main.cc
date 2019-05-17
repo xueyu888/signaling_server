@@ -188,6 +188,7 @@ int main(int argc, char* argv[]) {
               peerdispatch.AddServer(member->id());
               socket_done = false;
             } else if (member->is_keep_alive(s)) {
+              member->keepalive();
               s->Send("200 OK", true, "text/plain", "", "");
             } else {
               ChannelMember* target = clients.IsTargetedRequest(s);
