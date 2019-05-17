@@ -386,11 +386,25 @@ void PeerChannel::CloseAll() {
   DeleteAll();
 }
 
-void PeerChannel::OnClosing(DataSocket* ds) {
+void PeerChannel::OnClosing(DataSocket* ds, PeerDispatch& peerdispatch) {
   for (Members::iterator i = members_.begin(); i != members_.end(); ++i) {
     ChannelMember* m = (*i);
     m->OnClosing(ds);
     if (!m->connected()) {
+        //if p2p client close, set server to free, delete client 
+      if (m->get_p2p_server_id()) {
+        peerdispatch.setUsedFlag(true, m->get_p2p_server_id(), false);
+        ChannelMember* p2p_server = Lookup( m->get_p2p_server_id());
+        if (p2p_server)
+          p2p_server->NotifyClientCloseToServer(m);
+        else 
+          printf("%s no server found", __func__ );
+        peerdispatch.DeleteClient(m->id());
+      } else {
+        peerdispatch.DeleteServer(m->id());
+        m->set_p2p_server_id(0);
+      } //if p2p server close, delete server
+
       i = members_.erase(i);
       Members failures;
       BroadcastChangedState(*m, &failures);

@@ -108,7 +108,7 @@ class PeerChannel {
 
   // Called when a socket was determined to be closing by the peer (or if the
   // connection went dead).
-  void OnClosing(DataSocket* ds);
+  void OnClosing(DataSocket* ds, PeerDispatch& peerdispatch);
 
   void CheckForTimeout(PeerDispatch& peerdispatch);
 
