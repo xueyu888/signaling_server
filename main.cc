@@ -227,7 +227,7 @@ int main(int argc, char* argv[]) {
       if (socket_done) {
         
         printf("Disconnecting socket\n");
-        clients.OnClosing(s);
+        clients.OnClosing(s, peerdispatch);
 
         assert(s->valid());  // Close must not have been called yet
         FD_CLR(s->socket(), &socket_set);
