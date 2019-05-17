@@ -32,6 +32,7 @@ class ChannelMember {
   bool is_wait_request(DataSocket* ds) const;
   bool is_client_request(DataSocket* ds) const;
   bool is_server_request(DataSocket* ds) const;
+  bool is_keep_alive(DataSocket* ds) const;
   const std::string& name() const { return name_; }
 
   bool TimedOut();

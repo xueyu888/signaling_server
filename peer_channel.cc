@@ -35,7 +35,12 @@
 static const char kPeerIdHeader[] = "Pragma: ";
 
 static const char* kRequestPaths[] = {
-  "/wait", "sign_out", "/message", "/client", "/server"
+  "/wait", 
+  "sign_out", 
+  "/message", 
+  "/client", 
+  "/server",
+  "/keepalive"
 };
 
 enum RequestPathIndex {
@@ -43,7 +48,8 @@ enum RequestPathIndex {
   kSignOut,
   kMessage,
   kClient,
-  kServer
+  kServer,
+  kKeepalive
 };
 
 const size_t kMaxNameLength = 512;
@@ -79,6 +85,10 @@ bool ChannelMember::is_wait_request(DataSocket* ds) const {
   return ds && ds->PathEquals(kRequestPaths[kWait]);
 }
 
+bool ChannelMember::is_keep_alive(DataSocket* ds) const {
+  return ds && ds->PathEquals(kRequestPaths[kKeepalive]);
+}
+
 bool ChannelMember::is_client_request(DataSocket* ds) const {
   return ds && ds->PathEquals(kRequestPaths[kClient]);
 }
@@ -88,7 +98,7 @@ bool ChannelMember::is_server_request(DataSocket* ds) const {
 }
 
 bool ChannelMember::TimedOut() {
-  return waiting_socket_ == NULL && (time(NULL) - timestamp_) > 30;
+  return waiting_socket_ == NULL && (time(NULL) - timestamp_) > 15;
 }
 
 std::string ChannelMember::GetPeerIdHeader() const {
@@ -397,10 +407,6 @@ void PeerChannel::CheckForTimeout(PeerDispatch& peerdispatch) {
   for (Members::iterator i = members_.begin(); i != members_.end(); ++i) {
     ChannelMember* m = (*i);
     if (m->TimedOut()) {
-      if (m->name() == "xueyu@luoyefeisong" ) {
-        printf("%s listening client time out\n", __func__);
-        continue;
-      }
       printf("Timeout: %s %d\n", m->name().c_str(), m->id());
 
         //if p2p client close, set server to free, delete client 

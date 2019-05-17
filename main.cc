@@ -141,7 +141,7 @@ int main(int argc, char* argv[]) {
     for (SocketArray::iterator i = sockets.begin(); i != sockets.end(); ++i)
       FD_SET((*i)->socket(), &socket_set);
 
-    struct timeval timeout = {10, 0};
+    struct timeval timeout = {5, 0};
     if (select(FD_SETSIZE, &socket_set, NULL, NULL, &timeout) == SOCKET_ERROR) {
       printf("select failed\n");
       break;
@@ -187,6 +187,8 @@ int main(int argc, char* argv[]) {
             } else if (member->is_server_request(s)) {
               peerdispatch.AddServer(member->id());
               socket_done = false;
+            } else if (member->is_keep_alive(s)) {
+              s->Send("200 OK", true, "text/plain", "", "");
             } else {
               ChannelMember* target = clients.IsTargetedRequest(s);
               if (target) {
