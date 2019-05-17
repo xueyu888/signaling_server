@@ -80,7 +80,8 @@ bool DataSocket::OnDataAvailable(bool* close_socket) {
   assert(valid());
   char buffer[0xfff] = {0};
   int bytes = recv(socket_, buffer, sizeof(buffer), 0);
-  if (bytes == SOCKET_ERROR || bytes == 0) {
+  if (bytes <= 0) {
+    printf("socket recv %d\n", bytes);
     *close_socket = true;
     return false;
   }
