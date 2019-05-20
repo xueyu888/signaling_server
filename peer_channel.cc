@@ -103,8 +103,7 @@ void ChannelMember::keepalive() {
 }
 
 bool ChannelMember::TimedOut() {
-  return (waiting_socket_ == NULL && (time(NULL) - timestamp_) > 15) || 
-         (time(NULL) - time_keepalive_) > 15;
+  return (time(NULL) - time_keepalive_) > 15;
 }
 
 std::string ChannelMember::GetPeerIdHeader() const {
