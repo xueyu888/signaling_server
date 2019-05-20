@@ -42,6 +42,8 @@ class ChannelMember : public std::enable_shared_from_this<ChannelMember> {
   std::string name_;
   static unsigned int s_member_id_;
   std::weak_ptr<class sender> sender_;
+  boost::asio::strand<
+	  boost::asio::io_context::executor_type> strand_;
 };
 
 class PeerChannel {

@@ -28,7 +28,8 @@ ChannelMember::ChannelMember(std::shared_ptr<class sender> sender,
     : id_(++s_member_id_),
       sender_(sender),
       connected_(true),
-      timer_(sender->get_context())  {
+      timer_(sender->get_context()),
+	  strand_(timer_.get_executor()) {
 
   name_ = name;
   if (name_.empty())
@@ -42,24 +43,21 @@ ChannelMember::ChannelMember(std::shared_ptr<class sender> sender,
 
 ChannelMember::~ChannelMember() 
 {
+  Close();
   printf("%s\n", __func__);
 }
-
-
-
-
 
 void ChannelMember::Close() {
   if (connected()) {
     set_disconnected();
-    timer_.cancel();
-	printf("%s channelmember id %d\n", __func__, id());
+	  boost::system::error_code ec;
+	  timer_.expires_from_now(std::chrono::milliseconds(1));
+		printf("%s channelmember id %d timer code %d\n", __func__, id(), ec.value());
 
     if (auto s = sender_.lock())
       s->close();
   }
 }
-
 
 void ChannelMember::Send(std::shared_ptr<std::string> buffer) {
   if (auto s = sender_.lock())
@@ -75,14 +73,15 @@ void ChannelMember::KeepAlive() {
   auto msg = std::make_shared<std::string>(oss.str());
   Send(msg);
 
+
   timer_.expires_after(std::chrono::seconds(KEEPALIVE_TIMEOUT));
-  timer_.async_wait(boost::bind(&ChannelMember::OnTimeout,
-	                  shared_from_this(),
-	                  boost::asio::placeholders::error));
-      
+  OnTimeout({});
 }
 
 void ChannelMember::OnTimeout(const boost::system::error_code& ec) {
+  if (ec == boost::asio::error::operation_aborted)
+		return;
+
   if(ec && ec != boost::asio::error::operation_aborted) {
       printf("%s timer error: %s code %d \n", __func__, ec.message().c_str(), ec.value());
       Close();
@@ -100,9 +99,11 @@ void ChannelMember::OnTimeout(const boost::system::error_code& ec) {
   }
 
   // Wait on the timer
-  timer_.async_wait(boost::bind(&ChannelMember::OnTimeout,
+  timer_.async_wait(
+	  boost::asio::bind_executor(
+		  strand_, boost::bind(&ChannelMember::OnTimeout,
 							                 shared_from_this(),
-							                 boost::asio::placeholders::error));
+							                 boost::asio::placeholders::error)));
 }
 
 //
