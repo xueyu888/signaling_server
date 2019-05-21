@@ -50,9 +50,8 @@ ChannelMember::~ChannelMember()
 void ChannelMember::Close() {
   if (connected()) {
     set_disconnected();
-	  boost::system::error_code ec;
-	  timer_.expires_from_now(std::chrono::milliseconds(1));
-		printf("%s channelmember id %d timer code %d\n", __func__, id(), ec.value());
+    timer_.cancel();
+		printf("%s channelmember id %d \n", __func__, id());
 
     if (auto s = sender_.lock())
       s->close();
@@ -67,14 +66,14 @@ void ChannelMember::Send(std::shared_ptr<std::string> buffer) {
 void ChannelMember::KeepAlive() {
   pt::ptree tree;
   std::ostringstream oss;
-
+ 
   tree.put("signal", "keep-alive");
   write_json(oss, tree);
   auto msg = std::make_shared<std::string>(oss.str());
   Send(msg);
 
 
-  timer_.expires_after(std::chrono::seconds(KEEPALIVE_TIMEOUT));
+  timer_.expires_after(std::chrono::milliseconds(KEEPALIVE_TIMEOUT));
   OnTimeout({});
 }
 
