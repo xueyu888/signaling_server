@@ -1,6 +1,8 @@
 #include "tcp_session.h"
 #include "session_delegate.h"
 #include <iostream>
+#include <string.h>
+
 int g_tcp_session_num = 0;
 
 tcp_session::tcp_session(tcp::socket socket, 
