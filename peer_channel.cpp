@@ -123,7 +123,7 @@ std::shared_ptr<ChannelMember> PeerChannel::Lookup(unsigned int id) const {
 
 std::shared_ptr<ChannelMember> PeerChannel::Lookup(std::shared_ptr<sender> sender) const {
   for (auto i : members_) {
-    if (i->sender() == sender) {
+    if (i->get_sender() == sender) {
       return i;
     }
   }
