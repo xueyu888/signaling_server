@@ -227,7 +227,6 @@ int main(int argc, char* argv[]) {
 
       if (socket_done) {
         
-        printf("Disconnecting socket\n");
         clients.OnClosing(s, peerdispatch);
 
         assert(s->valid());  // Close must not have been called yet
@@ -249,7 +248,6 @@ int main(int argc, char* argv[]) {
         printf("Connection limit reached\n");
       } else {
         sockets.push_back(s);
-        printf("New connection...\n");
       }
     }
   }

@@ -419,7 +419,6 @@ void PeerChannel::OnClosing(DataSocket* ds, PeerDispatch& peerdispatch) {
         break;
     }
   }
-  printf("Total connected: %s\n", std::to_string(members_.size()).c_str());
 }
 
 void PeerChannel::CheckForTimeout(PeerDispatch& peerdispatch) {
