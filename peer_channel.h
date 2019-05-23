@@ -24,7 +24,7 @@ class ChannelMember : public std::enable_shared_from_this<ChannelMember> {
 	  connected_ = false; 
   }
   const std::string& name() const { return name_; }
-  std::shared_ptr<class sender> sender() { 
+  std::shared_ptr<class sender> get_sender() { 
     return sender_.lock(); 
   }
 

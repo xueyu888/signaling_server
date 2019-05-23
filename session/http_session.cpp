@@ -120,5 +120,5 @@ void http_session::close() {
 }
 
 boost::asio::io_context& http_session::get_context() {
-  return socket_.get_io_context();
+  return socket_.get_executor().context();
 }

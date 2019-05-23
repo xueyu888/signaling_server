@@ -1,5 +1,5 @@
 {
-  "tcpPort": "8888",
+  "tcpPort": "5555",
   "httpPort": "6666",
   "tcpListeningIp": "0.0.0.0",
   "HttpListeningIp": "0.0.0.0",

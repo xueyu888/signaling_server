@@ -17,7 +17,7 @@ using namespace boost::asio::ip;
 int main(int argc, char* argv[])
 {
     boost::property_tree::ptree tree;
-    boost::property_tree::json_parser::read_json("D:/signaling_server/configure.json", tree);
+    boost::property_tree::json_parser::read_json("./configure.json", tree);
     int tcp_port = tree.get<int>("tcpPort");
     std::string tcp_listen_ip = tree.get<std::string>("tcpListeningIp");
     int http_port = tree.get<int>("httpPort");
@@ -40,7 +40,7 @@ int main(int argc, char* argv[])
     // Create and launch a listening port
     std::make_shared<listener>(
         ioc,
-        tcp::endpoint{address, port},
+        tcp::endpoint{address, (unsigned short)tcp_port},
 		potocol,
         pcd)->run();
 

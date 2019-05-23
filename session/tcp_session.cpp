@@ -108,7 +108,7 @@ void tcp_session::on_send(const boost::system::error_code& ec,
 
 void tcp_session::send(std::shared_ptr<std::string> buffer) {
     auto msg = std::make_shared<message> ();
-    strcpy_s(msg->msg, buffer->c_str());
+    std::strcpy(msg->msg, buffer->c_str());
     async_write(socket_, boost::asio::buffer(msg->msg, strlen(msg->msg)),
               boost::bind(&tcp_session::on_send,
                           shared_from_this(),
@@ -125,5 +125,5 @@ void tcp_session::close() {
 }
 
 boost::asio::io_context& tcp_session::get_context() {
-  return socket_.get_io_context();
+  return socket_.get_executor().context();
 }
