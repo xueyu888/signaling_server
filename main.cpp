@@ -40,7 +40,7 @@ int main(int argc, char* argv[])
     // Create and launch a listening port
     std::make_shared<listener>(
         ioc,
-        tcp::endpoint{address, port},
+        tcp::endpoint{address, (unsigned short)tcp_port},
 		potocol,
         pcd)->run();
 
