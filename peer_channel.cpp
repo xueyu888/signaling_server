@@ -200,8 +200,8 @@ void PeerChannel::DeleteMember(std::shared_ptr<sender> sender) {
 
 void PeerChannel::HandleKeepAlive(std::shared_ptr<sender> sender) {
   std::unique_lock<std::recursive_mutex> lock(member_lock_);
-  auto member = Lookup(sender);
-  member->KeepAlive();
+  if (auto member = Lookup(sender))
+	member->KeepAlive();
 }
 
 

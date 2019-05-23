@@ -29,4 +29,5 @@ private:
   std::shared_ptr<session_delegate> session_delegate_;
   boost::asio::strand<
       boost::asio::io_context::executor_type> strand_;
+  char cache_data_[100000];
 };

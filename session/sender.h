@@ -11,7 +11,7 @@ using namespace boost::asio::ip;
 using namespace boost::asio;
 
 typedef struct{
-	char msg[3000];
+	char msg[20000];
 }message;
 
 // Class for send message
