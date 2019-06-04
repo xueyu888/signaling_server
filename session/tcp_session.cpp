@@ -2,6 +2,7 @@
 #include "session_delegate.h"
 #include <iostream>
 #include <string.h>
+#pragma warning(disable : 4996)
 
 int g_tcp_session_num = 0;
 
@@ -108,7 +109,7 @@ void tcp_session::on_send(const boost::system::error_code& ec,
 
 void tcp_session::send(std::shared_ptr<std::string> buffer) {
     auto msg = std::make_shared<message> ();
-    strcpy_s(msg->msg, buffer->c_str());
+    strcpy(msg->msg, buffer->c_str());
     async_write(socket_, boost::asio::buffer(msg->msg, strlen(msg->msg)),
               boost::bind(&tcp_session::on_send,
                           shared_from_this(),
