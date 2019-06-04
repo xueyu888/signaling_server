@@ -112,7 +112,12 @@ void http_session::on_write(
 }
 
 void http_session::close() {
-  socket_.close();
+  try {
+    socket_.close();
+  } catch (boost::system::error_code ec) {
+	printf("close error: %s\n", ec.message());
+  }
+  
   if (session_delegate_)
     session_delegate_->on_close(shared_from_this());
   

@@ -31,7 +31,7 @@ void tcp_session::on_read(const boost::system::error_code& ec,
   int cache_len = strlen(cache_data_);
 
   if (p_cache[0] != 0) {
-    memcpy_s(p_cache + cache_len,sizeof(cache_data_), buffer->msg, strlen(buffer->msg));
+    memcpy(p_cache + cache_len, buffer->msg, strlen(buffer->msg));
     p_start = p_cache;
   } else {
     p_start = buffer->msg;
@@ -52,7 +52,7 @@ void tcp_session::on_read(const boost::system::error_code& ec,
   if (*data_start != 0) {
     char* p_next = cache_data_;
     int cat_len = p_start - data_start;
-    memcpy_s(p_next, sizeof(cache_data_), data_start, cat_len);
+    memcpy(p_next, data_start, cat_len);
     memset(p_next + cat_len, 0x0, sizeof(cache_data_ - cat_len));
   } else {
 	if (cache_data_[0] != 0)
@@ -108,7 +108,7 @@ void tcp_session::on_send(const boost::system::error_code& ec,
 
 void tcp_session::send(std::shared_ptr<std::string> buffer) {
     auto msg = std::make_shared<message> ();
-    std::strcpy(msg->msg, buffer->c_str());
+    strcpy_s(msg->msg, buffer->c_str());
     async_write(socket_, boost::asio::buffer(msg->msg, strlen(msg->msg)),
               boost::bind(&tcp_session::on_send,
                           shared_from_this(),
