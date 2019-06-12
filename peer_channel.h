@@ -77,6 +77,9 @@ class PeerChannel {
 
   void ForwardRequestToPeer(unsigned int peer_id, 
                             std::shared_ptr<std::string> buffer);
+                            
+  void NotifyPeerClose(unsigned int peer_id);
+
  protected:
   void DeleteAll();
 

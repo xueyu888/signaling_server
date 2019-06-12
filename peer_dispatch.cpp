@@ -40,6 +40,17 @@ void PeerDispatch::DeleteMember(int id) {
 			__func__, id, Clients_.size(), Servers_.size());
 }
 
+bool PeerDispatch::IsServer(int id) {
+  auto iter = std::find_if(Servers_.begin(), 
+                           Servers_.end(), 
+                           [id](int& i){return i == id;});
+
+  if (iter != Servers_.end()) 
+    return true;  
+  else 
+    return false;
+}
+
 int PeerDispatch::Dispatch(int client_id) {
 	if (!Servers_.empty()) {
     for(auto i: Servers_) {

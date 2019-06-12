@@ -190,7 +190,16 @@ void PeerChannel::DeleteMember(std::shared_ptr<sender> sender) {
     for (Members::iterator i = members_.begin(); i != members_.end(); ++i) {
       if (member == *i) {
         members_.erase(i);
+
+        //In the relay mode, must notify the server that it is also disconnected. 
+        //Because coturn is disconnected from the client, it will not disconnect 
+        //the server at the same time.
+        if (!peer_dispatch_.IsServer(member->id())) 
+          if (auto server_id = peer_dispatch_.GetPeer(member->id()))
+            NotifyPeerClose(server_id);
+        
         peer_dispatch_.DeleteMember(member->id());
+
         break;
       }
     }
@@ -201,9 +210,19 @@ void PeerChannel::DeleteMember(std::shared_ptr<sender> sender) {
 void PeerChannel::HandleKeepAlive(std::shared_ptr<sender> sender) {
   std::unique_lock<std::recursive_mutex> lock(member_lock_);
   if (auto member = Lookup(sender))
-	member->KeepAlive();
+	  member->KeepAlive();
 }
 
+void PeerChannel::NotifyPeerClose(unsigned int peer_id) {
+  if (auto member = Lookup(peer_id)) {
+    boost::property_tree::ptree tree;
+    tree.put("signal", "disconnect");
+    std::ostringstream oss;
+    pt::write_json(oss, tree);
+    auto response = std::make_shared<std::string>(oss.str());
+    member->Send(response);
+  }
+}
 
 void PeerChannel::CloseAll() {
   std::unique_lock<std::recursive_mutex> lock(member_lock_);

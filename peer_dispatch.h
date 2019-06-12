@@ -11,6 +11,7 @@ class PeerDispatch {
     void AddClient(int id);
     void AddServer(int id);
     void DeleteMember(int id);
+    bool IsServer(int id);
     int  Dispatch(int client_id);
     int  GetPeer(int i);    
   private:
